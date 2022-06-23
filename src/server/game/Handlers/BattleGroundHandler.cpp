@@ -44,10 +44,13 @@ void WorldSession::HandleBattlemasterHelloOpcode(WorldPacket& recvData)
     if (!unit->IsBattleMaster())                             // it's not battlemaster
         return;
 
-    // Stop the npc if moving
-    if (uint32 pause = unit->GetMovementTemplate().GetInteractionPauseTimer())
-        unit->PauseMovement(pause);
-    unit->SetHomePosition(unit->GetPosition());
+    if (!unit->IsBusy())
+    {
+        // Stop the npc if moving
+        if (uint32 pause = unit->GetMovementTemplate().GetInteractionPauseTimer())
+            unit->PauseMovement(pause);
+        unit->SetHomePosition(unit->GetPosition());
+    }
 
     BattlegroundTypeId bgTypeId = sBattlegroundMgr->GetBattleMasterBG(unit->GetEntry());
 

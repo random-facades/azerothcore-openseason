@@ -1007,10 +1007,13 @@ void WorldSession::SendListInventory(ObjectGuid vendorGuid, uint32 vendorEntry)
         GetPlayer()->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
     }
 
-    // Stop the npc if moving
-    if (uint32 pause = vendor->GetMovementTemplate().GetInteractionPauseTimer())
-        vendor->PauseMovement(pause);
-    vendor->SetHomePosition(vendor->GetPosition());
+    if (!vendor->IsBusy())
+    {
+        // Stop the npc if moving
+        if (uint32 pause = vendor->GetMovementTemplate().GetInteractionPauseTimer())
+            vendor->PauseMovement(pause);
+        vendor->SetHomePosition(vendor->GetPosition());
+    }
 
     SetCurrentVendor(vendorEntry);
 

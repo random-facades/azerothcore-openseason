@@ -303,7 +303,8 @@ struct CreatureBaseStats
 
     uint32 GenerateHealth(CreatureTemplate const* info) const
     {
-        return uint32(std::ceil(BaseHealth[info->expansion] * info->ModHealth));
+        float variation = frand(0.9, 1.1);
+        return uint32(std::ceil(BaseHealth[info->expansion] * info->ModHealth * variation));
     }
 
     uint32 GenerateMana(CreatureTemplate const* info) const
@@ -312,7 +313,8 @@ struct CreatureBaseStats
         if (!BaseMana)
             return 0;
 
-        return uint32(std::ceil(BaseMana * info->ModMana));
+        float variation = frand(0.9, 1.1);
+        return uint32(std::ceil(BaseMana * info->ModMana * variation));
     }
 
     uint32 GenerateArmor(CreatureTemplate const* info) const

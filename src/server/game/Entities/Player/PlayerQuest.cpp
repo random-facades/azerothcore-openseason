@@ -964,6 +964,14 @@ bool Player::SatisfyQuestLevel(Quest const* qInfo, bool msg) const
             SendCanTakeQuestResponse(INVALIDREASON_DONT_HAVE_REQ); // There doesn't seem to be a specific response for too high player level
         return false;
     }
+    else if (getLevel() == qInfo->GetMinLevel() && getLevel() < sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) && qInfo->GetMinPartialLevel() > 0)
+    {
+        uint32 curXP = GetUInt32Value(PLAYER_XP);
+        uint32 nextLvlXP = GetUInt32Value(PLAYER_NEXT_LEVEL_XP);
+        uint32 xpPerc = 100 * curXP / nextLvlXP;
+
+        return xpPerc >= qInfo->GetMinPartialLevel();
+    }
     return true;
 }
 

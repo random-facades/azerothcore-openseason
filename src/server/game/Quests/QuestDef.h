@@ -226,6 +226,7 @@ public:
     [[nodiscard]] uint32 GetQuestMethod() const { return Method; }
     [[nodiscard]] int32  GetZoneOrSort() const { return ZoneOrSort; }
     [[nodiscard]] uint32 GetMinLevel() const { return MinLevel; }
+    [[nodiscard]] uint32 GetMinPartialLevel() const { return MinPartialLevel; }
     [[nodiscard]] uint32 GetMaxLevel() const { return MaxLevel; }
     [[nodiscard]] int32  GetQuestLevel() const { return Level; }
     [[nodiscard]] uint32 GetType() const { return Type; }
@@ -343,6 +344,7 @@ protected:
     uint32 Method;
     int32  ZoneOrSort;
     uint32 MinLevel;
+    uint32 MinPartialLevel;
     int32  Level;
     uint32 Type;
     uint32 AllowableRaces;

@@ -119,7 +119,10 @@ Quest::Quest(Field* questRecord)
             ++_reqItemsCount;
     }
 
+    // repurposing this value to allow more options for level requirements
     // int8 Unknown0 = questRecord[100].Get<uint8>();
+    MinPartialLevel = questRecord[100].Get<uint8>();
+
     // int32 VerifiedBuild = questRecord[105].Get<int32>();
 
     for (int i = 0; i < QUEST_EMOTE_COUNT; ++i)

@@ -2092,6 +2092,7 @@ public:
     void SetBaseWeaponDamage(WeaponAttackType attType, WeaponDamageRange damageRange, float value) { m_weaponDamage[attType][damageRange] = value; }
     virtual void CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bool addTotalPct, float& minDamage, float& maxDamage) = 0;
     uint32 CalculateDamage(WeaponAttackType attType, bool normalized, bool addTotalPct);
+    float CalculateDamageF(WeaponAttackType attType, bool normalized, bool addTotalPct);
     float GetAPMultiplier(WeaponAttackType attType, bool normalized);
 
     bool isInFrontInMap(Unit const* target, float distance, float arc = M_PI) const;
@@ -2176,6 +2177,8 @@ public:
     uint32 SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, uint32 healamount, DamageEffectType damagetype, float TotalMod = 0.0f, uint32 stack = 1);
     uint32 SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, uint32 healamount, DamageEffectType damagetype, uint32 stack = 1);
 
+    float MeleeDamageBonusDoneF(Unit* pVictim, float damage, WeaponAttackType attType, SpellInfo const* spellProto = nullptr);
+    float MeleeDamageBonusTakenF(Unit* attacker, float pdamage, WeaponAttackType attType, SpellInfo const* spellProto = nullptr);
     uint32 MeleeDamageBonusDone(Unit* pVictim, uint32 damage, WeaponAttackType attType, SpellInfo const* spellProto = nullptr);
     uint32 MeleeDamageBonusTaken(Unit* attacker, uint32 pdamage, WeaponAttackType attType, SpellInfo const* spellProto = nullptr);
 
@@ -2210,6 +2213,7 @@ public:
     // redefined in Creature
     static bool IsDamageReducedByArmor(SpellSchoolMask damageSchoolMask, SpellInfo const* spellInfo = nullptr, uint8 effIndex = MAX_SPELL_EFFECTS);
     static uint32 CalcArmorReducedDamage(Unit const* attacker, Unit const* victim, const uint32 damage, SpellInfo const* spellInfo, uint8 attackerLevel = 0, WeaponAttackType attackType = MAX_ATTACK);
+    static float CalcArmorReducedDamageF(Unit const* attacker, Unit const* victim, const float damage, SpellInfo const* spellInfo, uint8 attackerLevel = 0, WeaponAttackType attackType = MAX_ATTACK);
     static void CalcAbsorbResist(DamageInfo& dmgInfo, bool Splited = false);
     static void CalcHealAbsorb(HealInfo& healInfo);
 

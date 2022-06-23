@@ -61,7 +61,7 @@ void ScriptMgr::ModifyPeriodicDamageAurasTick(Unit* target, Unit* attacker, uint
     });
 }
 
-void ScriptMgr::ModifyMeleeDamage(Unit* target, Unit* attacker, uint32& damage)
+void ScriptMgr::ModifyMeleeDamage(Unit* target, Unit* attacker, float& damage)
 {
     ExecuteScript<UnitScript>([&](UnitScript* script)
     {

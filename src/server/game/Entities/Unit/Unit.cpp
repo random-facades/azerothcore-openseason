@@ -1422,6 +1422,10 @@ void Unit::DealSpellDamage(SpellNonMeleeDamage* damageInfo, bool durabilityLoss,
 // TODO for melee need create structure as in
 void Unit::CalculateMeleeDamage(Unit* victim, uint32 damage, CalcDamageInfo* damageInfo, WeaponAttackType attackType, const bool sittingVictim)
 {
+    float tempDamage = damage;
+    float tempDamageInfo = 0.0f;
+    float tempCleanDamage = 0.0f;
+    float tempBlockedAmount = 0.0f;
     damageInfo->attacker         = this;
     damageInfo->target           = victim;
     damageInfo->damageSchoolMask = GetMeleeDamageSchoolMask();
@@ -1471,22 +1475,22 @@ void Unit::CalculateMeleeDamage(Unit* victim, uint32 damage, CalcDamageInfo* dam
         return;
     }
 
-    damage += CalculateDamage(damageInfo->attackType, false, true);
+    tempDamage += CalculateDamageF(damageInfo->attackType, false, true);
     // Add melee damage bonus
-    damage = MeleeDamageBonusDone(damageInfo->target, damage, damageInfo->attackType);
-    damage = damageInfo->target->MeleeDamageBonusTaken(this, damage, damageInfo->attackType);
+    tempDamage = MeleeDamageBonusDoneF(damageInfo->target, tempDamage, damageInfo->attackType);
+    tempDamage = damageInfo->target->MeleeDamageBonusTakenF(this, tempDamage, damageInfo->attackType);
 
     // Script Hook For CalculateMeleeDamage -- Allow scripts to change the Damage pre class mitigation calculations
-    sScriptMgr->ModifyMeleeDamage(damageInfo->target, damageInfo->attacker, damage);
+    sScriptMgr->ModifyMeleeDamage(damageInfo->target, damageInfo->attacker, tempDamage);
 
     // Calculate armor reduction
     if (IsDamageReducedByArmor((SpellSchoolMask)(damageInfo->damageSchoolMask)))
     {
-        damageInfo->damage = Unit::CalcArmorReducedDamage(this, damageInfo->target, damage, nullptr, 0, damageInfo->attackType);
-        damageInfo->cleanDamage += damage - damageInfo->damage;
+        tempDamageInfo = Unit::CalcArmorReducedDamageF(this, damageInfo->target, tempDamage, nullptr, 0, damageInfo->attackType);
+        tempCleanDamage += tempDamage - tempDamageInfo;
     }
     else
-        damageInfo->damage = damage;
+        tempDamageInfo = tempDamage;
 
     damageInfo->hitOutCome = RollMeleeOutcomeAgainst(damageInfo->target, damageInfo->attackType);
 
@@ -1501,15 +1505,19 @@ void Unit::CalculateMeleeDamage(Unit* victim, uint32 damage, CalcDamageInfo* dam
             damageInfo->HitInfo        |= HITINFO_MISS | HITINFO_SWINGNOHITSOUND;
             damageInfo->TargetState     = VICTIMSTATE_EVADES;
             damageInfo->procEx         |= PROC_EX_EVADE;
-            damageInfo->damage = 0;
-            damageInfo->cleanDamage = 0;
+            tempDamageInfo = 0.0f;
+            tempCleanDamage = 0.0f;
+            // damageInfo->damage = 0;
+            // damageInfo->cleanDamage = 0;
             return;
         case MELEE_HIT_MISS:
             damageInfo->HitInfo        |= HITINFO_MISS;
             damageInfo->TargetState     = VICTIMSTATE_INTACT;
             damageInfo->procEx         |= PROC_EX_MISS;
-            damageInfo->damage          = 0;
-            damageInfo->cleanDamage     = 0;
+            tempDamageInfo = 0.0f;
+            tempCleanDamage = 0.0f;
+            // damageInfo->damage          = 0;
+            // damageInfo->cleanDamage     = 0;
             break;
         case MELEE_HIT_NORMAL:
             damageInfo->TargetState     = VICTIMSTATE_HIT;
@@ -1522,7 +1530,7 @@ void Unit::CalculateMeleeDamage(Unit* victim, uint32 damage, CalcDamageInfo* dam
 
                 damageInfo->procEx         |= PROC_EX_CRITICAL_HIT;
                 // Crit bonus calc
-                damageInfo->damage += damageInfo->damage;
+                tempDamageInfo += tempDamageInfo;
                 float mod = 0.0f;
                 // Apply SPELL_AURA_MOD_ATTACKER_RANGED_CRIT_DAMAGE or SPELL_AURA_MOD_ATTACKER_MELEE_CRIT_DAMAGE
                 if (damageInfo->attackType == RANGED_ATTACK)
@@ -1540,39 +1548,52 @@ void Unit::CalculateMeleeDamage(Unit* victim, uint32 damage, CalcDamageInfo* dam
                 // Increase crit damage from SPELL_AURA_MOD_CRIT_PERCENT_VERSUS
                 mod += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_CRIT_PERCENT_VERSUS, crTypeMask);
                 if (mod != 0)
-                    AddPct(damageInfo->damage, mod);
+                    AddPct(tempDamageInfo, mod);
                 break;
             }
         case MELEE_HIT_PARRY:
             damageInfo->TargetState  = VICTIMSTATE_PARRY;
             damageInfo->procEx      |= PROC_EX_PARRY;
-            damageInfo->cleanDamage += damageInfo->damage;
-            damageInfo->damage = 0;
+            tempCleanDamage += tempDamageInfo;
+            tempDamageInfo = 0.0f;
+            // damageInfo->cleanDamage += damageInfo->damage;
+            // damageInfo->damage = 0;
             break;
         case MELEE_HIT_DODGE:
             damageInfo->TargetState  = VICTIMSTATE_DODGE;
             damageInfo->procEx      |= PROC_EX_DODGE;
-            damageInfo->cleanDamage += damageInfo->damage;
-            damageInfo->damage = 0;
+            tempCleanDamage += tempDamageInfo;
+            tempDamageInfo = 0.0f;
+            // damageInfo->cleanDamage += damageInfo->damage;
+            // damageInfo->damage = 0;
             break;
         case MELEE_HIT_BLOCK:
             damageInfo->TargetState = VICTIMSTATE_HIT;
             damageInfo->HitInfo    |= HITINFO_BLOCK;
             damageInfo->procEx     |= PROC_EX_BLOCK;
-            damageInfo->blocked_amount = damageInfo->target->GetShieldBlockValue();
+            tempBlockedAmount = damageInfo->target->GetShieldBlockValue();
+            // damageInfo->blocked_amount = damageInfo->target->GetShieldBlockValue();
+            
             // double blocked amount if block is critical
             if (damageInfo->target->isBlockCritical())
-                damageInfo->blocked_amount += damageInfo->blocked_amount;
-            if (damageInfo->blocked_amount >= damageInfo->damage)
+            {
+                tempBlockedAmount += tempBlockedAmount;
+                // damageInfo->blocked_amount += damageInfo->blocked_amount;
+            }
+            if (tempBlockedAmount >= tempDamageInfo)
             {
                 damageInfo->TargetState = VICTIMSTATE_BLOCKS;
-                damageInfo->blocked_amount = damageInfo->damage;
+                tempBlockedAmount = tempDamageInfo;
+                // damageInfo->blocked_amount = damageInfo->damage;
                 damageInfo->procEx |= PROC_EX_FULL_BLOCK;
             }
             else
                 damageInfo->procEx  |= PROC_EX_NORMAL_HIT;
-            damageInfo->damage      -= damageInfo->blocked_amount;
-            damageInfo->cleanDamage += damageInfo->blocked_amount;
+
+            tempDamageInfo -= tempBlockedAmount;
+            tempCleanDamage -= tempBlockedAmount;
+            // damageInfo->damage      -= damageInfo->blocked_amount;
+            // damageInfo->cleanDamage += damageInfo->blocked_amount;
             break;
         case MELEE_HIT_GLANCING:
             {
@@ -1583,8 +1604,11 @@ void Unit::CalculateMeleeDamage(Unit* victim, uint32 damage, CalcDamageInfo* dam
                 if (leveldif > 3)
                     leveldif = 3;
                 float reducePercent = 1 - leveldif * 0.1f;
-                damageInfo->cleanDamage += damageInfo->damage - uint32(reducePercent * damageInfo->damage);
-                damageInfo->damage = uint32(reducePercent * damageInfo->damage);
+
+                tempCleanDamage += tempDamageInfo - (reducePercent * tempDamageInfo);
+                tempDamageInfo *= reducePercent;
+                // damageInfo->cleanDamage += damageInfo->damage - uint32(reducePercent * damageInfo->damage);
+                // damageInfo->damage = uint32(reducePercent * damageInfo->damage);
                 break;
             }
         case MELEE_HIT_CRUSHING:
@@ -1592,7 +1616,8 @@ void Unit::CalculateMeleeDamage(Unit* victim, uint32 damage, CalcDamageInfo* dam
             damageInfo->TargetState  = VICTIMSTATE_HIT;
             damageInfo->procEx      |= PROC_EX_NORMAL_HIT;
             // 150% normal damage
-            damageInfo->damage += (damageInfo->damage / 2);
+            tempDamageInfo += tempDamageInfo / 2;
+            // damageInfo->damage += (damageInfo->damage / 2);
             break;
         default:
             break;
@@ -1603,8 +1628,9 @@ void Unit::CalculateMeleeDamage(Unit* victim, uint32 damage, CalcDamageInfo* dam
         damageInfo->HitInfo |= HITINFO_AFFECTS_VICTIM;
 
     // attackType is checked already for BASE_ATTACK or OFF_ATTACK so it can't be RANGED_ATTACK here
-    int32 dmg = damageInfo->damage;
-    int32 cleanDamage = damageInfo->cleanDamage;
+
+    int32 dmg = int32(tempDamageInfo * 100);
+    int32 cleanDamage = int32(tempCleanDamage * 100);
     if (CanApplyResilience())
     {
         int32 resilienceReduction = dmg;
@@ -1615,8 +1641,9 @@ void Unit::CalculateMeleeDamage(Unit* victim, uint32 damage, CalcDamageInfo* dam
         cleanDamage += resilienceReduction;
     }
 
-    damageInfo->damage = std::max(0, dmg);
-    damageInfo->cleanDamage = std::max(0, cleanDamage);
+    damageInfo->damage = std::max(0, dmg/100);
+    damageInfo->cleanDamage = std::max(0, cleanDamage/100);
+    damageInfo->blocked_amount = tempBlockedAmount;
 
     // Calculate absorb resist
     if (damageInfo->damage > 0)
@@ -1804,9 +1831,14 @@ bool Unit::IsDamageReducedByArmor(SpellSchoolMask schoolMask, SpellInfo const* s
     return true;
 }
 
-uint32 Unit::CalcArmorReducedDamage(Unit const* attacker, Unit const* victim, const uint32 damage, SpellInfo const* spellInfo, uint8 attackerLevel, WeaponAttackType /*attackType*/)
+uint32 Unit::CalcArmorReducedDamage(Unit const* attacker, Unit const* victim, const uint32 damage, SpellInfo const* spellInfo, uint8 attackerLevel, WeaponAttackType attackType)
 {
-    uint32 newdamage = 0;
+    return uint32(CalcArmorReducedDamageF(attacker, victim, float(damage), spellInfo, attackerLevel, attackType));
+}
+
+float Unit::CalcArmorReducedDamageF(Unit const* attacker, Unit const* victim, const float damage, SpellInfo const* spellInfo, uint8 attackerLevel, WeaponAttackType /*attackType*/)
+{
+    float newdamage = 0;
     float armor = float(victim->GetArmor());
 
     // Ignore enemy armor by SPELL_AURA_MOD_TARGET_RESISTANCE aura
@@ -1884,7 +1916,7 @@ uint32 Unit::CalcArmorReducedDamage(Unit const* attacker, Unit const* victim, co
     if (tmpvalue > 0.75f)
         tmpvalue = 0.75f;
 
-    newdamage = uint32(damage - (damage * tmpvalue));
+    newdamage = damage - (damage * tmpvalue);
 
     return (newdamage > 1) ? newdamage : 1;
 }
@@ -12503,6 +12535,11 @@ bool Unit::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index) cons
 
 uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType attType, SpellInfo const* spellProto)
 {
+    return uint32(MeleeDamageBonusDoneF(victim, float(pdamage), attType, spellProto));
+}
+
+float Unit::MeleeDamageBonusDoneF(Unit * victim, float pdamage, WeaponAttackType attType, SpellInfo const* spellProto)
+{
     if (!victim || pdamage == 0)
         return 0;
 
@@ -12512,14 +12549,14 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
         if (GetEntry() == 27893)
         {
             if (Unit* owner = GetOwner())
-                return owner->MeleeDamageBonusDone(victim, pdamage, attType, spellProto) / 2;
+                return owner->MeleeDamageBonusDoneF(victim, pdamage, attType, spellProto) / 2;
         }
     }
 
     uint32 creatureTypeMask = victim->GetCreatureTypeMask();
 
     // Done fixed damage bonus auras
-    int32 DoneFlatBenefit = 0;
+    float DoneFlatBenefit = 0;
 
     // ..done
     AuraEffectList const& mDamageDoneCreature = GetAuraEffectsByType(SPELL_AURA_MOD_DAMAGE_DONE_CREATURE);
@@ -12564,7 +12601,7 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
                     normalized = true;
                     break;
                 }
-        DoneFlatBenefit += int32(APbonus / 14.0f * GetAPMultiplier(attType, normalized));
+        DoneFlatBenefit += APbonus / 14.0f * GetAPMultiplier(attType, normalized);
     }
 
     // Done total percent damage auras
@@ -12689,11 +12726,11 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
     if (spellProto)
         if (spellProto->HasAttribute(SPELL_ATTR3_IGNORE_CASTER_MODIFIERS))
         {
-            DoneFlatBenefit = 0;
+            DoneFlatBenefit = 0.0f;
             DoneTotalMod = 1.0f;
         }
 
-    float tmpDamage = float(int32(pdamage) + DoneFlatBenefit) * DoneTotalMod;
+    float tmpDamage = (pdamage + DoneFlatBenefit) * DoneTotalMod;
 
     // apply spellmod to Done damage
     if (spellProto)
@@ -12701,15 +12738,20 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
             modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_DAMAGE, tmpDamage);
 
     // bonus result can be negative
-    return uint32(std::max(tmpDamage, 0.0f));
+    return std::max(tmpDamage, 0.0f);
 }
 
 uint32 Unit::MeleeDamageBonusTaken(Unit* attacker, uint32 pdamage, WeaponAttackType attType, SpellInfo const* spellProto)
 {
+    return uint32(MeleeDamageBonusTakenF(attacker, float(pdamage), attType, spellProto));
+}
+
+float Unit::MeleeDamageBonusTakenF(Unit * attacker, float pdamage, WeaponAttackType attType, SpellInfo const* spellProto)
+{
     if (pdamage == 0)
         return 0;
 
-    int32 TakenFlatBenefit = 0;
+    float TakenFlatBenefit = 0;
 
     // ..taken
     AuraEffectList const& mDamageTaken = GetAuraEffectsByType(SPELL_AURA_MOD_DAMAGE_TAKEN);
@@ -12780,7 +12822,7 @@ uint32 Unit::MeleeDamageBonusTaken(Unit* attacker, uint32 pdamage, WeaponAttackT
     if (spellProto)
         if (spellProto->HasAttribute(SPELL_ATTR0_CU_NO_POSITIVE_TAKEN_BONUS) && TakenTotalMod > 1.0f)
         {
-            TakenFlatBenefit = 0;
+            TakenFlatBenefit = 0.0f;
             TakenTotalMod = 1.0f;
         }
 
@@ -12801,10 +12843,10 @@ uint32 Unit::MeleeDamageBonusTaken(Unit* attacker, uint32 pdamage, WeaponAttackT
             TakenTotalMod += ignoreModifier;
     }
 
-    float tmpDamage = (float(pdamage) + TakenFlatBenefit) * TakenTotalMod;
+    float tmpDamage = (pdamage + TakenFlatBenefit) * TakenTotalMod;
 
     // bonus result can be negative
-    return uint32(std::max(tmpDamage, 0.0f));
+    return std::max(tmpDamage, 0.0f);
 }
 
 class spellIdImmunityPredicate

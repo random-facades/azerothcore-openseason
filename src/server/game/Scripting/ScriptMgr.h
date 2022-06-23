@@ -423,7 +423,7 @@ public:
     virtual void ModifyPeriodicDamageAurasTick(Unit* /*target*/, Unit* /*attacker*/, uint32& /*damage*/) { }
 
     // Called when Melee Damage is being Dealt
-    virtual void ModifyMeleeDamage(Unit* /*target*/, Unit* /*attacker*/, uint32& /*damage*/) { }
+    virtual void ModifyMeleeDamage(Unit* /*target*/, Unit* /*attacker*/, float& /*damage*/) { }
 
     // Called when Spell Damage is being Dealt
     virtual void ModifySpellDamageTaken(Unit* /*target*/, Unit* /*attacker*/, int32& /*damage*/) { }
@@ -2382,7 +2382,7 @@ public: /* UnitScript */
     void OnHeal(Unit* healer, Unit* reciever, uint32& gain);
     void OnDamage(Unit* attacker, Unit* victim, uint32& damage);
     void ModifyPeriodicDamageAurasTick(Unit* target, Unit* attacker, uint32& damage);
-    void ModifyMeleeDamage(Unit* target, Unit* attacker, uint32& damage);
+    void ModifyMeleeDamage(Unit* target, Unit* attacker, float& damage);
     void ModifySpellDamageTaken(Unit* target, Unit* attacker, int32& damage);
     void ModifyHealRecieved(Unit* target, Unit* attacker, uint32& addHealth);
     uint32 DealDamage(Unit* AttackerUnit, Unit* pVictim, uint32 damage, DamageEffectType damagetype);

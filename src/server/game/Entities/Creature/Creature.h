@@ -415,6 +415,8 @@ protected:
     ObjectGuid::LowType m_spawnId;                      ///< For new or temporary creatures is 0 for saved it is lowguid
     uint8 m_equipmentId;
     int8 m_originalEquipmentId; // can be -1
+    float m_powerFraction[MAX_POWERS];
+    float m_healthFraction;
 
     bool m_AlreadyCallAssistance;
     bool m_AlreadySearchedAssistance;

@@ -807,7 +807,7 @@ void Creature::Update(uint32 diff)
                     else
                         Regenerate(POWER_MANA);
 
-                    m_regenTimer += CREATURE_REGEN_INTERVAL;
+                    m_regenTimer += CREATURE_REGEN_INTERVAL / CREATURE_REGEN_SPEED;
                 }
 
                 if (CanNotReachTarget() && !IsInEvadeMode() && !GetMap()->IsRaid())
@@ -927,7 +927,15 @@ void Creature::Regenerate(Powers power)
 
     addvalue += GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, power) * (power == POWER_FOCUS ? PET_FOCUS_REGEN_INTERVAL.count() : CREATURE_REGEN_INTERVAL) / (5 * IN_MILLISECONDS);
 
-    ModifyPower(power, int32(addvalue));
+    if (power != POWER_FOCUS)
+        addvalue /= CREATURE_REGEN_SPEED;
+
+    addvalue += m_powerFraction[power];
+    int32 integervalue = int32(addvalue);
+    m_powerFraction[power] = addvalue - integervalue;
+
+
+    ModifyPower(power, integervalue);
 }
 
 void Creature::RegenerateHealth()
@@ -941,7 +949,7 @@ void Creature::RegenerateHealth()
     if (curValue >= maxValue)
         return;
 
-    uint32 addvalue = 0;
+    float addvalue = 0;
 
     // Not only pet, but any controlled creature
     // Xinef: fix polymorph rapid regen
@@ -953,9 +961,9 @@ void Creature::RegenerateHealth()
         float Spirit = GetStat(STAT_SPIRIT);
 
         if (GetPower(POWER_MANA) > 0)
-            addvalue = uint32(Spirit * 0.25 * HealthIncreaseRate);
+            addvalue = (Spirit * 0.25 * HealthIncreaseRate);
         else
-            addvalue = uint32(Spirit * 0.80 * HealthIncreaseRate);
+            addvalue = (Spirit * 0.80 * HealthIncreaseRate);
     }
 
     // Apply modifiers (if any).
@@ -965,7 +973,12 @@ void Creature::RegenerateHealth()
 
     addvalue += GetTotalAuraModifier(SPELL_AURA_MOD_REGEN) * CREATURE_REGEN_INTERVAL  / (5 * IN_MILLISECONDS);
 
-    ModifyHealth(addvalue);
+    addvalue = addvalue / CREATURE_REGEN_SPEED + m_healthFraction;
+
+    int32 integervalue = int32(addvalue);
+    m_healthFraction = addvalue - integervalue;
+
+    ModifyHealth(integervalue);
 }
 
 void Creature::DoFleeToGetAssistance()

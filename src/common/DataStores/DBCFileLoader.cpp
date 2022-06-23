@@ -154,6 +154,7 @@ uint32 DBCFileLoader::GetFormatRecordSize(char const* format, int32* index_pos)
             case FT_BYTE:
                 recordsize += sizeof(uint8);
                 break;
+            case FT_AUTO:
             case FT_NA:
             case FT_NA_BYTE:
                 break;
@@ -188,10 +189,12 @@ char* DBCFileLoader::AutoProduceData(char const* format, uint32& records, char**
     */
 
     typedef char* ptr;
-    if (strlen(format) != fieldCount)
+    if (DBCFileLoader::GetFormatLength(format) != fieldCount)
     {
         return nullptr;
     }
+
+
 
     //get struct size and index pos
     int32 i;
@@ -236,9 +239,13 @@ char* DBCFileLoader::AutoProduceData(char const* format, uint32& records, char**
             indexTable[y] = &dataTable[offset];
         }
 
+        uint32 autoShift = 0; // shift the format char to the next without affecting field index
+
         for (uint32 x = 0; x < fieldCount; ++x)
         {
-            switch (format[x])
+            if (format[x] == FT_AUTO && strlen(format) >= x) autoShift++;
+            
+            switch (format[x + autoShift])
             {
                 case FT_FLOAT:
                     *((float*)(&dataTable[offset])) = getRecord(y).getFloat(x);
@@ -263,6 +270,7 @@ char* DBCFileLoader::AutoProduceData(char const* format, uint32& records, char**
                 case FT_NA:
                 case FT_NA_BYTE:
                 case FT_SORT:
+                case FT_AUTO:
                     break;
                 default:
                     ASSERT(false && "Unknown field format character in DBCfmt.h");
@@ -276,7 +284,7 @@ char* DBCFileLoader::AutoProduceData(char const* format, uint32& records, char**
 
 char* DBCFileLoader::AutoProduceStrings(char const* format, char* dataTable)
 {
-    if (strlen(format) != fieldCount)
+    if (DBCFileLoader::GetFormatLength(format) != fieldCount)
     {
         return nullptr;
     }
@@ -320,6 +328,7 @@ char* DBCFileLoader::AutoProduceStrings(char const* format, char* dataTable)
                 case FT_NA:
                 case FT_NA_BYTE:
                 case FT_SORT:
+                case FT_AUTO:
                     break;
                 default:
                     ASSERT(false && "Unknown field format character in DBCfmt.h");

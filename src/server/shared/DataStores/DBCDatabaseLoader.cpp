@@ -103,6 +103,7 @@ char* DBCDatabaseLoader::Load(uint32& records, char**& indexTable)
                     dataOffset += sizeof(char*);
                     break;
                 case FT_SORT:
+                case FT_AUTO:
                 case FT_NA:
                     break;
                 default:

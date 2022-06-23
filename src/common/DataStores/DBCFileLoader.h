@@ -30,7 +30,8 @@ enum DbcFieldFormat
     FT_FLOAT = 'f',                                           //float
     FT_INT = 'i',                                             //uint32
     FT_BYTE = 'b',                                            //uint8
-    FT_SORT = 'd',                                            //sorted by this field, field is not included
+    FT_SORT = 'd',                                            //sorted by this field
+    FT_AUTO = 'a',                                            //sorted by this field, field is not included, auto-generated
     FT_IND = 'n',                                             //the same, but parsed to data
     FT_LOGIC = 'l'                                           //Logical (boolean)
 };
@@ -95,6 +96,17 @@ public:
     char* AutoProduceData(char const* fmt, uint32& count, char**& indexTable);
     char* AutoProduceStrings(char const* fmt, char* dataTable);
     static uint32 GetFormatRecordSize(const char* format, int32* index_pos = nullptr);
+
+    [[nodiscard]] const uint32 GetFormatLength(char const* format) const
+    {
+        uint32 ignore = 0;
+        uint32 length = strlen(format);
+        for (uint32 i = 0; i < length; i++)
+            if (format[i] == FT_AUTO)
+                ignore++;
+        
+        return length - ignore;
+    }
 
 private:
     uint32 recordSize;

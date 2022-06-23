@@ -24,13 +24,17 @@
 
 uint32 Acore::XP::BaseGain(uint8 pl_level, uint8 mob_level, ContentLevels content)
 {
-    uint32 baseGain;
-    uint32 nBaseExp;
+    uint32 baseGain = 10;
+    /*
 
+    uint32 nBaseExp = 5;
+    uint32 baseGain = (mob_level * 5 + nBaseExp);
+
+    /*
     switch (content)
     {
     case CONTENT_1_60:
-        nBaseExp = 45;
+        nBaseExp = 15;
         break;
     case CONTENT_61_70:
         nBaseExp = 235;
@@ -40,29 +44,24 @@ uint32 Acore::XP::BaseGain(uint8 pl_level, uint8 mob_level, ContentLevels conten
         break;
     default:
         LOG_ERROR("misc", "BaseGain: Unsupported content level {}", content);
-        nBaseExp = 45;
+        nBaseExp = 15;
         break;
     }
+    */
 
-    if (mob_level >= pl_level)
+    if (mob_level < pl_level)
     {
-        uint8 nLevelDiff = mob_level - pl_level;
-        if (nLevelDiff > 4)
-            nLevelDiff = 4;
-
-        baseGain = ((pl_level * 5 + nBaseExp) * (20 + nLevelDiff) / 10 + 1) / 2;
-    }
-    else
-    {
-        uint8 gray_level = GetGrayLevel(pl_level);
+        uint8 gray_level = GetGrayLevel(pl_level); // level of zero experience gain
         if (mob_level > gray_level)
         {
             uint8 ZD = GetZeroDifference(pl_level);
-            baseGain = (pl_level * 5 + nBaseExp) * (ZD + mob_level - pl_level) / ZD;
+            baseGain = (baseGain * (ZD + mob_level - pl_level)) / ZD;
         }
         else
             baseGain = 0;
     }
+    else
+        baseGain += 5 * (mob_level - pl_level);
 
     //sScriptMgr->OnBaseGainCalculation(baseGain, pl_level, mob_level, content); // pussywizard: optimization
     return baseGain;

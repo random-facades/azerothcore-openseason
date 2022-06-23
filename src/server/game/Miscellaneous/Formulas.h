@@ -38,46 +38,16 @@ namespace Acore::Honor
 
 namespace Acore::XP
 {
-    inline uint8 GetGrayLevel(uint8 pl_level)
-    {
-        uint8 level;
-
-        if (pl_level <= 5)
-            level = 0;
-        else if (pl_level <= 39)
-            level = pl_level - 5 - pl_level / 10;
-        else if (pl_level <= 59)
-            level = pl_level - 1 - pl_level / 5;
-        else
-            level = pl_level - 9;
-
-        //sScriptMgr->OnGrayLevelCalculation(level, pl_level); // pussywizard: optimization
-        return level;
-    }
-
-    inline XPColorChar GetColorCode(uint8 pl_level, uint8 mob_level)
-    {
-        XPColorChar color;
-
-        if (mob_level >= pl_level + 5)
-            color = XP_RED;
-        else if (mob_level >= pl_level + 3)
-            color = XP_ORANGE;
-        else if (mob_level >= pl_level - 2)
-            color = XP_YELLOW;
-        else if (mob_level > GetGrayLevel(pl_level))
-            color = XP_GREEN;
-        else
-            color = XP_GRAY;
-
-        //sScriptMgr->OnColorCodeCalculation(color, pl_level, mob_level); // pussywizard: optimization
-        return color;
-    }
-
     inline uint8 GetZeroDifference(uint8 pl_level)
     {
-        uint8 diff;
+        uint8 diff = 1;
+        if (pl_level <= 10)
+            diff = 3; // Same level, -1, or -2
+        else if (pl_level <= 15)
+            diff = 2; // Same level or -1
+        // else Same Level only
 
+        /*
         if (pl_level < 8)
             diff = 5;
         else if (pl_level < 10)
@@ -102,9 +72,51 @@ namespace Acore::XP
             diff = 16;
         else
             diff = 17;
+         */
 
-        //sScriptMgr->OnZeroDifferenceCalculation(diff, pl_level); // pussywizard: optimization
+         //sScriptMgr->OnZeroDifferenceCalculation(diff, pl_level); // pussywizard: optimization
         return diff;
+    }
+
+    inline uint8 GetGrayLevel(uint8 pl_level)
+    {
+        uint8 ZD = GetZeroDifference(pl_level);
+        uint8 level = pl_level > ZD ? pl_level - ZD : 0;
+
+
+        /*
+        if (pl_level <= 5)
+            level = 0;
+        else if (pl_level <= 39)
+            level = pl_level - 5 - pl_level / 10;
+        else if (pl_level <= 59)
+            level = pl_level - 1 - pl_level / 5;
+        else
+            level = pl_level - 9;
+         */
+        //sScriptMgr->OnGrayLevelCalculation(level, pl_level); // pussywizard: optimization
+        return level;
+    }
+
+    inline XPColorChar GetColorCode(uint8 pl_level, uint8 mob_level)
+    {
+        XPColorChar color;
+
+        uint8 ZD = GetZeroDifference(pl_level);
+
+        if (mob_level >= pl_level + ZD)
+            color = XP_RED;
+        else if (mob_level >= pl_level + (ZD / 2))
+            color = XP_ORANGE;
+        else if (mob_level >= pl_level - (ZD / 2))
+            color = XP_YELLOW;
+        else if (mob_level > pl_level - ZD)
+            color = XP_GREEN;
+        else
+            color = XP_GRAY;
+
+        //sScriptMgr->OnColorCodeCalculation(color, pl_level, mob_level); // pussywizard: optimization
+        return color;
     }
 
     uint32 BaseGain(uint8 pl_level, uint8 mob_level, ContentLevels content);

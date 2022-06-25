@@ -18,7 +18,7 @@ CREATE TABLE `player_racestats` (
    `base_spi` tinyint unsigned NOT NULL,
    `name` text NOT NULL,
    PRIMARY KEY (`race`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
 INSERT INTO `player_racestats` (`race`, `base_str`, `base_agi`, `base_sta`, `base_inte`, `base_spi`, `name`) VALUES

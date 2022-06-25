@@ -102,13 +102,14 @@ INSERT INTO `playercreateinfo_action` (`race`, `class`, `button`, `action`, `typ
 DELETE FROM `creature` WHERE `guid` IN (46306,48578,49172,49499);
 
 -- Fixing Coastal Runner that was incorrectly marked as a Greymist Coastrunner 
-UPDATE `creature` SET `id1` = 2174, `equipment_id` = 0, `position_z` = -12, `wander_distance` = 10, `curhealth` = 300
+UPDATE `creature` SET `id1` = 2174, `equipment_id` = 0, `position_z` = -12, `wander_distance` = 10, `curhealth` = 300 where guid = 37855;
 
 
 -- Add Teleport training quest
 DELETE FROM `quest_template` WHERE `ID` = 1600;
+
 INSERT INTO `quest_template` (`ID`, `QuestSortID`, `RewardItem1`, `RewardAmount1`, `LogTitle`, `LogDescription`, `QuestDescription`, `QuestCompletionLog`, `VerifiedBuild`) VALUES 
-(1600, -284, 17031, 3, 'Portal in Your Pocket', 'Talk to a Portal Trainer.	Congratulations!$bTeleportation is now available to all!$b$bThe core of the Hearthstone enchantment has been distilled and crafted into a spell that mimics their teleportation.$b$bJust ask and you too can be forcefully dragged through the arcane!', 'Talk to a Portal Trainer.', 12340);
+(1600, -284, 17031, 3, 'Portal in Your Pocket', 'Talk to a Portal Trainer.	Congratulations!$bTeleportation is now available to all!$b$bThe core of the Hearthstone enchantment has been distilled and crafted into a spell that mimics their teleportation.$b$bJust ask and you too can be forcefully dragged through the arcane!', 'Talk to a Portal Trainer.', '', 12340);
 
 -- Set NPCs to start the quest
 INSERT INTO `creature_queststarter` (`id`, `quest`) VALUES

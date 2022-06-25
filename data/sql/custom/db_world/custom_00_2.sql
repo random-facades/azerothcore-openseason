@@ -29,7 +29,7 @@ CREATE TABLE `creature_template_overload` (
    `spell_school_immune_mask` int unsigned NOT NULL DEFAULT '0',
    PRIMARY KEY (`entry`),
    KEY `idx_name` (`name`)
- ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+ ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `item_template_overload` (
    `entry` mediumint unsigned NOT NULL DEFAULT '0',
@@ -90,7 +90,7 @@ CREATE TABLE `item_template_overload` (
    `RequiredDisenchantSkill` smallint NOT NULL DEFAULT '-1',
    PRIMARY KEY (`entry`),
    KEY `idx_name` (`name`(250))
- ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+ ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `playercreateinfo_skills_overload` (
    `raceMask` int unsigned NOT NULL,
@@ -99,7 +99,7 @@ CREATE TABLE `playercreateinfo_skills_overload` (
    `Inheritable` tinyint unsigned NOT NULL DEFAULT '0',
    `comment` varchar(255) DEFAULT NULL,
    PRIMARY KEY (`raceMask`,`classMask`,`skill`)
- ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+ ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `quest_template_overload` (
    `ID` mediumint unsigned NOT NULL DEFAULT '0',
@@ -112,7 +112,7 @@ CREATE TABLE `quest_template_overload` (
    `RewardBonusMoney` int unsigned NOT NULL DEFAULT '0',
    `QuestName` text,
    PRIMARY KEY (`ID`)
- ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+ ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 
 

@@ -2778,6 +2778,11 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst(Unit const* victim, WeaponAttackTy
 
 uint32 Unit::CalculateDamage(WeaponAttackType attType, bool normalized, bool addTotalPct)
 {
+    return uint32(CalculateDamageF(attType, normalized, addTotalPct));
+}
+
+float Unit::CalculateDamageF(WeaponAttackType attType, bool normalized, bool addTotalPct)
+{
     float minDamage = 0.0f;
     float maxDamage = 0.0f;
 
@@ -2811,7 +2816,7 @@ uint32 Unit::CalculateDamage(WeaponAttackType attType, bool normalized, bool add
     if (maxDamage == 0.0f)
         maxDamage = 5.0f;
 
-    return urand(uint32(minDamage), uint32(maxDamage));
+    return frand(minDamage, maxDamage);
 }
 
 float Unit::CalculateLevelPenalty(SpellInfo const* spellProto) const

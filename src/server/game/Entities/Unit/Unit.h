@@ -1396,7 +1396,7 @@ public:
     void SetLevel(uint8 lvl, bool showLevelChange = true);
     [[nodiscard]] uint8 getRace(bool original = false) const;
     void setRace(uint8 race);
-    [[nodiscard]] uint32 getRaceMask() const { return 1 << (getRace(true) - 1); }
+    [[nodiscard]] uint32 getRaceMask(bool original = false) const { return 1 << (getRace(original) - 1); }
     [[nodiscard]] uint8 getClass() const { return GetByteValue(UNIT_FIELD_BYTES_0, 1); }
     [[nodiscard]] uint32 getClassMask() const { return 1 << (getClass() - 1); }
     [[nodiscard]] uint8 getGender() const { return GetByteValue(UNIT_FIELD_BYTES_0, 2); }
@@ -2446,7 +2446,7 @@ protected:
 
     void _UpdateAutoRepeatSpell();
 
-    uint8 m_realRace;
+    uint8 m_zone;
     uint8 m_race;
 
     bool m_AutoRepeatFirstCast;

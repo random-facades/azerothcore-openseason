@@ -2030,6 +2030,8 @@ public:
     [[nodiscard]] uint16 GetSkillStep(uint16 skill) const;            // 0...6
     [[nodiscard]] bool HasSkill(uint32 skill) const;
     void learnSkillRewardedSpells(uint32 id, uint32 value);
+    [[nodiscard]] uint16 GetRacialSkillID(bool raceOrZone = false) const;
+    [[nodiscard]] uint16 GetStartingZoneSkillID() const;
 
     WorldLocation& GetTeleportDest() { return teleportStore_dest; }
     [[nodiscard]] bool IsBeingTeleported() const { return mSemaphoreTeleport_Near != 0 || mSemaphoreTeleport_Far != 0; }

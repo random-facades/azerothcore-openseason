@@ -425,7 +425,7 @@ public:
 
         BattlegroundTypeId bgTypeId = bg->GetBgTypeID();
 
-        TeamId teamId1 = Player::TeamIdForRace(players[0]->getRace());
+        TeamId teamId1 = Player::TeamIdForRace(players[0]->getRace(true));
         TeamId teamId2 = (teamId1 == TEAM_ALLIANCE ? TEAM_HORDE : TEAM_ALLIANCE);
 
         for (uint8 i = 0; i < cnt; ++i)

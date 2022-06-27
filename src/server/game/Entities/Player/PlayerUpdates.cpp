@@ -1036,6 +1036,8 @@ void Player::UpdateSkillsForLevel()
         SkillRaceClassInfoEntry const* rcEntry =
             GetSkillRaceClassInfo(pskill, getRace(), getClass());
         if (!rcEntry)
+            rcEntry = GetSkillRaceClassInfo(pskill, getRace(true), getClass());
+        if (!rcEntry)
             continue;
 
         if (GetSkillRangeType(rcEntry) != SKILL_RANGE_LEVEL)

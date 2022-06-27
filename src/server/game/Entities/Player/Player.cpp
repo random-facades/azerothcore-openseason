@@ -506,10 +506,10 @@ bool Player::Create(ObjectGuid::LowType guidlow, CharacterCreateInfo* createInfo
 
     SetObjectScale(1.0f);
 
-    m_realRace = createInfo->Race; // set real race flag
+    m_zone = createInfo->Race; // set real race flag
     m_race = createInfo->Race; // set real race flag
 
-    SetFactionForRace(createInfo->Race);
+    SetFactionForRace(m_zone);
 
     if (!IsValidGender(createInfo->Gender))
     {
@@ -613,7 +613,7 @@ bool Player::Create(ObjectGuid::LowType guidlow, CharacterCreateInfo* createInfo
         addActionButton(action_itr->button, action_itr->action, action_itr->type);
 
     // original items
-    if (CharStartOutfitEntry const* oEntry = GetCharStartOutfitEntry(createInfo->Race, createInfo->Class, createInfo->Gender))
+    if (CharStartOutfitEntry const* oEntry = GetCharStartOutfitEntry(m_zone, createInfo->Class, createInfo->Gender))
     {
         for (int j = 0; j < MAX_OUTFIT_ITEMS; ++j)
         {
@@ -723,7 +723,7 @@ bool Player::StoreNewItemInBestSlots(uint32 titem_id, uint32 titem_amount)
     }
 
     // item can't be added
-    LOG_ERROR("entities.player", "STORAGE: Can't equip or store initial item {} for race {} class {}, error msg = {}", titem_id, getRace(true), getClass(), msg);
+    LOG_ERROR("entities.player", "STORAGE: Can't equip or store initial item {} for zone {} race {} class {}, error msg = {}", titem_id, getRace(true), getRace(), getClass(), msg);
     return false;
 }
 
@@ -2406,7 +2406,7 @@ void Player::GiveLevel(uint8 level)
         guild->UpdateMemberData(this, GUILD_MEMBER_DATA_LEVEL, level);
 
     PlayerLevelInfo info;
-    sObjectMgr->GetPlayerLevelInfo(getRace(true), getClass(), level, &info);
+    sObjectMgr->GetPlayerLevelInfo(getRace(), getClass(), level, &info);
 
     PlayerClassLevelInfo classInfo;
     sObjectMgr->GetPlayerClassLevelInfo(getClass(), level, &classInfo);
@@ -2522,7 +2522,7 @@ void Player::InitStatsForLevel(bool reapplyMods)
     sObjectMgr->GetPlayerClassLevelInfo(getClass(), getLevel(), &classInfo);
 
     PlayerLevelInfo info;
-    sObjectMgr->GetPlayerLevelInfo(getRace(true), getClass(), getLevel(), &info);
+    sObjectMgr->GetPlayerLevelInfo(getRace(), getClass(), getLevel(), &info);
 
     SetUInt32Value(PLAYER_FIELD_MAX_LEVEL, sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL));
     SetUInt32Value(PLAYER_NEXT_LEVEL_XP, sObjectMgr->GetXPForLevel(getLevel()));
@@ -4295,7 +4295,7 @@ void Player::BuildPlayerRepop()
     WorldPacket data(SMSG_PRE_RESURRECT, GetPackGUID().size());
     data << GetPackGUID();
     GetSession()->SendPacket(&data);
-    if (getRace(true) == RACE_NIGHTELF)
+    if (getRace() == RACE_NIGHTELF)
     {
         CastSpell(this, 20584, true);
     }
@@ -6022,7 +6022,7 @@ bool Player::RewardHonor(Unit* uVictim, uint32 groupsize, int32 honor, bool awar
             ApplyModUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS, 1, true);
             UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EARN_HONORABLE_KILL);
             UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HK_CLASS, victim->getClass());
-            UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HK_RACE, victim->getRace(true));
+            UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HK_RACE, victim->getRace());
             UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HONORABLE_KILL_AT_AREA, GetAreaId());
             UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HONORABLE_KILL, 1, 0, victim);
             UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SPECIAL_PVP_KILL, 1, 0, victim);
@@ -10286,7 +10286,7 @@ void Player::InitDataForForm(bool reapplyMods)
 
 void Player::InitDisplayIds()
 {
-    PlayerInfo const* info = sObjectMgr->GetPlayerInfo(getRace(true), getClass());
+    PlayerInfo const* info = sObjectMgr->GetPlayerInfo(getRace(), getClass());
     if (!info)
     {
         LOG_ERROR("entities.player", "Player {} has incorrect race/class pair. Can't init display ids.", GetGUID().ToString());
@@ -11528,11 +11528,23 @@ void Player::LearnDefaultSkills()
 
         LearnDefaultSkill(skillId, itr->Rank);
     }
+
+    info = sObjectMgr->GetPlayerInfo(getRace(true), getClass());
+    for (PlayerCreateInfoSkills::const_iterator itr = info->skills.begin(); itr != info->skills.end(); ++itr)
+    {
+        uint32 skillId = itr->SkillId;
+        if (HasSkill(skillId))
+            continue;
+
+        LearnDefaultSkill(skillId, itr->Rank);
+    }
 }
 
 void Player::LearnDefaultSkill(uint32 skillId, uint16 rank)
 {
     SkillRaceClassInfoEntry const* rcInfo = GetSkillRaceClassInfo(skillId, getRace(), getClass());
+    if (!rcInfo)
+        rcInfo = GetSkillRaceClassInfo(skillId, getRace(true), getClass());
     if (!rcInfo)
         return;
 
@@ -11645,6 +11657,44 @@ void Player::learnQuestRewardedSpells()
     }
 }
 
+uint16 Player::GetRacialSkillID(bool raceOrZone) const
+{
+    uint8 raceZone = getRace(raceOrZone);
+    switch (raceZone)
+    {
+    case RACE_HUMAN:
+        return 754;
+    case RACE_ORC:
+        return 125;
+    case RACE_DWARF:
+        return 101;
+    case RACE_NIGHTELF:
+        return 126;
+    case RACE_UNDEAD_PLAYER:
+        return 220;
+    case RACE_TAUREN:
+        return 124;
+    case RACE_GNOME:
+        return 753;
+    case RACE_TROLL:
+        return 733;
+    case RACE_BLOODELF:
+        return 756;
+    case RACE_DRAENEI:
+        return 760;
+    default:
+        if (raceOrZone)
+            return GetRacialSkillID(false);
+        else
+            return 0;
+    }
+}
+
+uint16 Player::GetStartingZoneSkillID() const
+{
+    return GetRacialSkillID(true);
+}
+
 void Player::learnSkillRewardedSpells(uint32 skill_id, uint32 skill_value)
 {
     uint32 raceMask  = getRaceMask();
@@ -11669,7 +11719,13 @@ void Player::learnSkillRewardedSpells(uint32 skill_id, uint32 skill_value)
         }
 
         // Check race if set
-        if (pAbility->RaceMask && !(pAbility->RaceMask & raceMask))
+        if (pAbility->RaceMask)
+        {
+            if (!(pAbility->RaceMask & raceMask))
+                continue;
+        }
+        // Stop if Racial ability and not in the Starting Zone for that Race
+        else if (skill_id == GetRacialSkillID() && skill_id != GetStartingZoneSkillID())
         {
             continue;
         }
@@ -11679,6 +11735,7 @@ void Player::learnSkillRewardedSpells(uint32 skill_id, uint32 skill_value)
         {
             continue;
         }
+
 
         // need unlearn spell
         if (skill_value < pAbility->MinSkillLineRank && pAbility->AcquireMethod == SKILL_LINE_ABILITY_LEARNED_ON_SKILL_VALUE)
@@ -13302,8 +13359,10 @@ void Player::_LoadSkills(PreparedQueryResult result)
 
             SkillRaceClassInfoEntry const* rcEntry = GetSkillRaceClassInfo(skill, getRace(), getClass());
             if (!rcEntry)
+                rcEntry = GetSkillRaceClassInfo(skill, getRace(true), getClass());
+            if (!rcEntry)
             {
-                LOG_ERROR("entities.player", "Character {} has skill {} that does not exist.", GetGUID().ToString(), skill);
+                LOG_ERROR("entities.player", "Character {} ( {} / {} ) has skill {} that does not exist.", GetGUID().ToString(), getRace(), getRace(true), skill);
                 continue;
             }
 
@@ -14292,6 +14351,7 @@ void Player::_SaveCharacter(bool create, CharacterDatabaseTransaction trans)
         stmt->SetData(index++, GetGUID().GetCounter());
         stmt->SetData(index++, GetSession()->GetAccountId());
         stmt->SetData(index++, GetName());
+        stmt->SetData(index++, getRace());
         stmt->SetData(index++, getRace(true));
         stmt->SetData(index++, getClass());
         stmt->SetData(index++, GetByteValue(PLAYER_BYTES_3, 0));   // save gender from PLAYER_BYTES_3, UNIT_BYTES_0 changes with every transform effect
@@ -14409,7 +14469,7 @@ void Player::_SaveCharacter(bool create, CharacterDatabaseTransaction trans)
         // Update query
         stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHARACTER);
         stmt->SetData(index++, GetName());
-        stmt->SetData(index++, getRace(true));
+        stmt->SetData(index++, getRace());
         stmt->SetData(index++, getClass());
         stmt->SetData(index++, GetByteValue(PLAYER_BYTES_3, 0));   // save gender from PLAYER_BYTES_3, UNIT_BYTES_0 changes with every transform effect
         stmt->SetData(index++, getLevel());

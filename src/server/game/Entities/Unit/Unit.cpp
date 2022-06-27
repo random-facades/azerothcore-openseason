@@ -200,7 +200,7 @@ Unit::Unit(bool isWorldObject) : WorldObject(isWorldObject),
     movespline(new Movement::MoveSpline()),
     i_AI(nullptr),
     i_disabledAI(nullptr),
-    m_realRace(0),
+    m_zone(0),
     m_race(0),
     m_AutoRepeatFirstCast(false),
     m_procDeep(0),
@@ -18269,7 +18269,7 @@ void Unit::RemoveCharmedBy(Unit* charmer)
 void Unit::RestoreFaction()
 {
     if (GetTypeId() == TYPEID_PLAYER)
-        ToPlayer()->SetFactionForRace(getRace());
+        ToPlayer()->SetFactionForRace(getRace(true));
     else
     {
         if (HasUnitTypeMask(UNIT_MASK_MINION))
@@ -18834,7 +18834,7 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form) const
                                 return 8571;
                         }
                 }
-                else if (Player::TeamIdForRace(getRace()) == TEAM_ALLIANCE)
+                else if (Player::TeamIdForRace(getRace(true)) == TEAM_ALLIANCE)
                     return 892;
                 else
                     return 8571;
@@ -18913,16 +18913,16 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form) const
                                 return 2289;
                         }
                 }
-                else if (Player::TeamIdForRace(getRace()) == TEAM_ALLIANCE)
+                else if (Player::TeamIdForRace(getRace(true)) == TEAM_ALLIANCE)
                     return 2281;
                 else
                     return 2289;
             case FORM_FLIGHT:
-                if (Player::TeamIdForRace(getRace()) == TEAM_ALLIANCE)
+                if (Player::TeamIdForRace(getRace(true)) == TEAM_ALLIANCE)
                     return 20857;
                 return 20872;
             case FORM_FLIGHT_EPIC:
-                if (Player::TeamIdForRace(getRace()) == TEAM_ALLIANCE)
+                if (Player::TeamIdForRace(getRace(true)) == TEAM_ALLIANCE)
                     return 21243;
                 return 21244;
             default:
@@ -18939,13 +18939,13 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form) const
             return formEntry->modelID_A;
         else
         {
-            if (Player::TeamIdForRace(getRace()) == TEAM_ALLIANCE)
+            if (Player::TeamIdForRace(getRace(true)) == TEAM_ALLIANCE)
                 modelid = formEntry->modelID_A;
             else
                 modelid = formEntry->modelID_H;
 
             // If the player is horde but there are no values for the horde modelid - take the alliance modelid
-            if (!modelid && Player::TeamIdForRace(getRace()) == TEAM_HORDE)
+            if (!modelid && Player::TeamIdForRace(getRace(true)) == TEAM_HORDE)
                 modelid = formEntry->modelID_A;
         }
     }
@@ -18955,7 +18955,7 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form) const
 
 uint32 Unit::GetModelForTotem(PlayerTotemType totemType)
 {
-    switch (getRace())
+    switch (getRace(true))
     {
         case RACE_ORC:
             {
@@ -20542,7 +20542,7 @@ uint8 Unit::getRace(bool original) const
     if (GetTypeId() == TYPEID_PLAYER)
     {
         if (original)
-            return m_realRace;
+            return m_zone;
         else
             return m_race;
     }

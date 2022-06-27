@@ -2,7 +2,9 @@
 -- Overload Databases
 --
 
-
+DROP TABLE IF EXISTS `creature_template_overload`;
+DROP TABLE IF EXISTS `item_template_overload`;
+DROP TABLE IF EXISTS `quest_template_overload`;
 
 CREATE TABLE `creature_template_overload` (
    `entry` mediumint unsigned NOT NULL DEFAULT '0',
@@ -92,7 +94,10 @@ CREATE TABLE `item_template_overload` (
    KEY `idx_name` (`name`(250))
  ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-CREATE TABLE `playercreateinfo_skills_overload` (
+
+/*
+ * Changing to overload in skilllineability_dbc
+CREATE TABLE `playercreateinfo_skills_addon` (
    `raceMask` int unsigned NOT NULL,
    `classMask` int unsigned NOT NULL,
    `skill` smallint unsigned NOT NULL,
@@ -100,6 +105,7 @@ CREATE TABLE `playercreateinfo_skills_overload` (
    `comment` varchar(255) DEFAULT NULL,
    PRIMARY KEY (`raceMask`,`classMask`,`skill`)
  ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+ */
 
 CREATE TABLE `quest_template_overload` (
    `ID` mediumint unsigned NOT NULL DEFAULT '0',

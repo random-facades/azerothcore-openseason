@@ -7,7 +7,8 @@
 --
 --
 
-DROP TABLE `player_levelstats`;
+DROP TABLE IF EXISTS `player_levelstats`;
+DROP TABLE IF EXISTS `player_racestats`;
 
 CREATE TABLE `player_racestats` (
    `race` tinyint unsigned NOT NULL,

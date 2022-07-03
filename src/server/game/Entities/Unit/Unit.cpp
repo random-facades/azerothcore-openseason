@@ -1487,10 +1487,11 @@ void Unit::CalculateMeleeDamage(Unit* victim, uint32 damage, CalcDamageInfo* dam
     if (IsDamageReducedByArmor((SpellSchoolMask)(damageInfo->damageSchoolMask)))
     {
         tempDamageInfo = Unit::CalcArmorReducedDamageF(this, damageInfo->target, tempDamage, nullptr, 0, damageInfo->attackType);
-        tempCleanDamage += tempDamage - tempDamageInfo;
+        tempCleanDamage = tempDamage - tempDamageInfo;
     }
     else
         tempDamageInfo = tempDamage;
+
 
     damageInfo->hitOutCome = RollMeleeOutcomeAgainst(damageInfo->target, damageInfo->attackType);
 
@@ -1641,9 +1642,9 @@ void Unit::CalculateMeleeDamage(Unit* victim, uint32 damage, CalcDamageInfo* dam
         cleanDamage += resilienceReduction;
     }
 
-    damageInfo->damage = std::max(0, dmg/100);
-    damageInfo->cleanDamage = std::max(0, cleanDamage/100);
-    damageInfo->blocked_amount = tempBlockedAmount;
+    damageInfo->damage = std::max(0, (dmg+50)/100);
+    damageInfo->cleanDamage = std::max(0, (cleanDamage+50)/100);
+    damageInfo->blocked_amount = (tempBlockedAmount+0.5);
 
     // Calculate absorb resist
     if (damageInfo->damage > 0)

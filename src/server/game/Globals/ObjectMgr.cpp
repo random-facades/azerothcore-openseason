@@ -5329,30 +5329,14 @@ void ObjectMgr::LoadQuestOverloads()
 
         Quest* overload = itr->second;
 
-        int16 level = fields[1].Get<int16>();
-        uint8 minLevel = fields[2].Get<uint8>();
-        uint8 minPartialLevel = fields[3].Get<uint8>();
+        overload->Level = fields[1].Get<int16>();
+        overload->MinLevel = fields[2].Get<uint8>();
+        overload->MinPartialLevel = fields[3].Get<uint8>();
 
-        if (level)
-            overload->Level = level;
-        if (minLevel)
-            overload->MinLevel = minLevel;
-        if (minPartialLevel)
-            overload->MinPartialLevel = minPartialLevel;
-
-        uint8 rewardXPDifficulty = fields[4].Get<uint8>();
-        int32 rewardMoney = fields[5].Get<int32>();
-        uint32 rewardMoneyDifficulty = fields[6].Get<uint32>();
-        uint32 rewardBonusMoney = fields[7].Get<uint32>();
-
-        if (rewardXPDifficulty)
-            overload->RewardXPDifficulty = rewardXPDifficulty;
-        if (rewardMoney)
-            overload->RewardMoney = rewardMoney;
-        if (rewardMoneyDifficulty)
-            overload->RewardMoneyDifficulty = rewardMoneyDifficulty;
-        if (rewardBonusMoney)
-            overload->RewardBonusMoney = rewardBonusMoney;
+        overload->RewardXPDifficulty = fields[4].Get<uint8>();
+        overload->RewardMoney = fields[5].Get<int32>();
+        overload->RewardMoneyDifficulty = fields[6].Get<uint32>();
+        overload->RewardBonusMoney = fields[7].Get<uint32>();
 
         ++count;
     } while (result->NextRow());

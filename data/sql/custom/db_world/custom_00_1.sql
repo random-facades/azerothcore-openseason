@@ -5,6 +5,7 @@
 
 -- Give spiders poison proc and remove cast poison ability
 UPDATE `creature_template_addon` SET `auras` = 3616 WHERE `entry` IN (1998,1999,2000,2001);
+DELETE FROM `smart_scripts` WHERE `entryorguid` IN (1998,1999,2000,2001) AND `action_param1` = 744;
 
 
 -- Create two tutorial auras to slow down spell casting speed and increase mana cost
@@ -25,7 +26,7 @@ UPDATE `creature_template_addon` SET `auras` = 50333 WHERE `entry` IN (2012,2015
 UPDATE `quest_template_addon` SET `PrevQuestID` = 4495 WHERE `ID` = 916;
 
 -- Delay Dolanaar Delivery quest until after finishing both Balance of Nature quests
-UPDATE `quest_template_addon` SET `PrevQuestID` = 2159 WHERE `ID` = 457;
+UPDATE `quest_template_addon` SET `PrevQuestID` = 457 WHERE `ID` = 2159;
 
 
 -- Reduce Level requirements for professions
@@ -48,11 +49,16 @@ UPDATE `npc_trainer` SET `MoneyCost` = 8000 WHERE `ID` in (27703,27705) and `Spe
 -- Reduce Level requirements for class training
 UPDATE `npc_trainer` SET `ReqLevel` = 1  WHERE `SpellID` IN (348);
 UPDATE `npc_trainer` SET `ReqLevel` = 2  WHERE `SpellID` IN (13163);
-UPDATE `npc_trainer` SET `ReqLevel` = 3  WHERE `SpellID` IN (53, 100, 116, 172, 587, 589, 702, 774, 921, 1776, 1978, 2052, 3044, 3127, 5504, 8042, 8921, 19740, 20271);
+UPDATE `npc_trainer` SET `ReqLevel` = 3  WHERE `SpellID` IN (53, 100, 116, 172, 587, 589, 702, 774, 921, 1776, 1978, 2052, 3044, 5504, 8042, 8921, 19740, 20271);
 UPDATE `npc_trainer` SET `ReqLevel` = 4  WHERE `SpellID` IN (17, 143, 332, 467, 498, 591, 639, 695, 1130, 1454, 1757, 2136, 2484, 5177, 6343, 6760, 34428);
 UPDATE `npc_trainer` SET `ReqLevel` = 5  WHERE `SpellID` IN (284, 339, 674, 1715, 2687, 5171, 5186, 5277);
-UPDATE `npc_trainer` SET `ReqLevel` = 6  WHERE `SpellID` IN (72, 99, 1058, 2589, 2983, 3127, 5232, 5242, 6546, 6770, 7384, 8924, 13549, 14281, 16689, 19883);
+UPDATE `npc_trainer` SET `ReqLevel` = 6  WHERE `SpellID` IN (72, 99, 1058, 2589, 2983, 5232, 5242, 6546, 6770, 7384, 8924, 13549, 14281, 16689, 19883);
 UPDATE `npc_trainer` SET `ReqLevel` = 7  WHERE `SpellID` IN (136, 1160, 2974, 6572, 20736);
+
+UPDATE `npc_trainer` SET `ReqLevel` = 3  WHERE `SpellID` = 3127 and ID = 200001; 
+UPDATE `npc_trainer` SET `ReqLevel` = 5  WHERE `SpellID` = 3127 and ID = 200013; 
+UPDATE `npc_trainer` SET `ReqLevel` = 6  WHERE `SpellID` = 3127 and ID = 200016; 
+UPDATE `npc_trainer` SET `ReqLevel` = 8  WHERE `SpellID` = 3127 and ID = 200004; 
 
 -- Reduce training cost to match spell becoming available at level 2
 UPDATE `npc_trainer` SET `MoneyCost` = 100 WHERE `ID` = 200013 and `SpellID` = 13163;
@@ -71,7 +77,7 @@ UPDATE `creature_loot_template` SET `Chance` = 1.5 where `Reference` = 11111;
 
 
 -- Move Anvil in Darnassus to next to smith & forge
-UPDATE `gameobject` SET `position_x` = 9920, `position_y` = 2309.14, `orientation` = 4.8954;
+UPDATE `gameobject` SET `position_x` = 9920, `position_y` = 2309.14, `orientation` = 4.8954 where guid = 49803;
 
 
 -- Delete and recreate Druid action bars

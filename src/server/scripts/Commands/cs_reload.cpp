@@ -465,6 +465,7 @@ public:
             sObjectMgr->CheckCreatureTemplate(cInfo);
         }
 
+        sObjectMgr->LoadCreatureTemplateOverloads(true);
         handler->SendGlobalGMSysMessage("Creature template reloaded.");
         return true;
     }

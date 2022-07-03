@@ -936,6 +936,7 @@ public:
     }
 
     void LoadQuests();
+    void LoadQuestOverloads();
     void LoadQuestMoneyRewards();
     void LoadQuestStartersAndEnders()
     {
@@ -1009,6 +1010,7 @@ public:
     void LoadCreatureTemplates();
     void LoadCreatureTemplate(Field* fields);
     void LoadCreatureTemplateAddons();
+    void LoadCreatureTemplateOverloads(bool silent = false);
     void LoadCreatureTemplateResistances();
     void LoadCreatureTemplateSpells();
     void CheckCreatureTemplate(CreatureTemplate const* cInfo);
@@ -1027,6 +1029,7 @@ public:
     void LoadGameObjectLocales();
     void LoadGameobjects();
     void LoadItemTemplates();
+    void LoadItemTemplateOverloads();
     void LoadItemLocales();
     void LoadItemSetNames();
     void LoadItemSetNameLocales();

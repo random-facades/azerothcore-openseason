@@ -1673,6 +1673,9 @@ void World::SetInitialWorldSettings()
     LOG_INFO("server.loading", "Loading Items...");                         // must be after LoadRandomEnchantmentsTable and LoadPageTexts
     sObjectMgr->LoadItemTemplates();
 
+    LOG_INFO("server.loading", "Loading Item Overloads...");                // overload item properties
+    sObjectMgr->LoadItemTemplateOverloads();
+
     LOG_INFO("server.loading", "Loading Item set names...");                // must be after LoadItemPrototypes
     sObjectMgr->LoadItemSetNames();
 
@@ -1687,6 +1690,9 @@ void World::SetInitialWorldSettings()
 
     LOG_INFO("server.loading", "Loading Creature template addons...");
     sObjectMgr->LoadCreatureTemplateAddons();
+
+    LOG_INFO("server.loading", "Loading Creature template overloads...");
+    sObjectMgr->LoadCreatureTemplateOverloads();
 
     LOG_INFO("server.loading", "Loading Reputation Reward Rates...");
     sObjectMgr->LoadReputationRewardRate();
@@ -1741,6 +1747,9 @@ void World::SetInitialWorldSettings()
 
     LOG_INFO("server.loading", "Loading Quests...");
     sObjectMgr->LoadQuests();                                    // must be loaded after DBCs, creature_template, item_template, gameobject tables
+
+    LOG_INFO("server.loading", "Loading Quest Overloads...");
+    sObjectMgr->LoadQuestOverloads();
 
     LOG_INFO("server.loading", "Checking Quest Disables");
     DisableMgr::CheckQuestDisables();                           // must be after loading quests

@@ -746,6 +746,124 @@ void ObjectMgr::LoadCreatureTemplateSpells()
     LOG_INFO("server.loading", " ");
 }
 
+void ObjectMgr::LoadCreatureTemplateOverloads(bool silent)
+{
+    uint32 oldMSTime = getMSTime();
+
+    //                                                 0      1      2         3          4         5        6      7
+    QueryResult result = WorldDatabase.Query("SELECT entry, name, subname, unit_class, minlevel, maxlevel, `rank`, dmgschool, "
+    //                          8               9                10             11            12          13       14         15
+                         "DamageModifier, BaseAttackTime, RangeAttackTime, BaseVariance, RangeVariance, mingold, maxgold, RegenHealth, "
+    //                         16              17            18                19                    20                       21                 
+                         "HealthModifier, ManaModifier, ArmorModifier, ExperienceModifier, mechanic_immune_mask, spell_school_immune_mask FROM creature_template_overload");
+
+    if (!result)
+    {
+        if (!silent)
+        {
+            LOG_WARN("server.loading", ">> Loaded 0 creature template overload definitions. DB table `creature_template_overload` is empty.");
+            LOG_INFO("server.loading", " ");
+        }
+        return;
+    }
+
+    uint32 count = 0;
+    do
+    {
+        Field* fields = result->Fetch();
+        uint32 entry = fields[0].Get<uint32>();
+
+        if (!sObjectMgr->GetCreatureTemplate(entry))
+        {
+            if (!silent)
+                LOG_ERROR("sql.sql", "Creature template (Entry: {}) does not exist but has a record in `creature_template_overload`", entry);
+            continue;
+        }
+
+
+        CreatureTemplate& creatureTemplate = _creatureTemplateStore[entry];
+        CreatureTemplate tempTemplate;
+
+        tempTemplate.unit_class = uint32(fields[3].Get<uint8>());
+        tempTemplate.minlevel = fields[4].Get<uint8>();
+        tempTemplate.maxlevel = fields[5].Get<uint8>();
+        tempTemplate.rank = uint32(fields[6].Get<uint8>());
+
+        if (tempTemplate.unit_class)
+            creatureTemplate.unit_class = tempTemplate.unit_class;
+        if (tempTemplate.minlevel)
+            creatureTemplate.minlevel = tempTemplate.minlevel;
+        if (tempTemplate.maxlevel)
+            creatureTemplate.maxlevel = tempTemplate.maxlevel;
+        if (tempTemplate.rank)
+            creatureTemplate.rank = tempTemplate.rank;
+
+        tempTemplate.dmgschool = uint32(fields[7].Get<int8>());
+        tempTemplate.DamageModifier = fields[8].Get<float>();
+        tempTemplate.BaseAttackTime = fields[9].Get<uint32>();
+        tempTemplate.RangeAttackTime = fields[10].Get<uint32>();
+        tempTemplate.BaseVariance = fields[11].Get<float>();
+        tempTemplate.RangeVariance = fields[12].Get<float>();
+
+        if (tempTemplate.dmgschool)
+            creatureTemplate.dmgschool = tempTemplate.dmgschool;
+        if (tempTemplate.DamageModifier)
+            creatureTemplate.DamageModifier = tempTemplate.DamageModifier;
+        if (tempTemplate.BaseAttackTime)
+            creatureTemplate.BaseAttackTime = tempTemplate.BaseAttackTime;
+        if (tempTemplate.RangeAttackTime)
+            creatureTemplate.RangeAttackTime = tempTemplate.RangeAttackTime;
+        if (tempTemplate.BaseVariance)
+            creatureTemplate.BaseVariance = tempTemplate.BaseVariance;
+        if (tempTemplate.RangeVariance)
+            creatureTemplate.RangeVariance = tempTemplate.RangeVariance;
+        
+        tempTemplate.mingold = fields[13].Get<uint32>();
+        tempTemplate.maxgold = fields[14].Get<uint32>();
+
+        if (tempTemplate.mingold)
+            creatureTemplate.mingold = tempTemplate.mingold;
+        if (tempTemplate.maxgold)
+            creatureTemplate.maxgold = tempTemplate.maxgold;
+
+        tempTemplate.RegenHealth = fields[15].Get<bool>();
+        tempTemplate.ModHealth = fields[16].Get<float>();
+        tempTemplate.ModMana = fields[17].Get<float>();
+        tempTemplate.ModArmor = fields[18].Get<float>();
+        tempTemplate.ModExperience = fields[19].Get<float>();
+
+        if (tempTemplate.RegenHealth)
+            creatureTemplate.RegenHealth = tempTemplate.RegenHealth;
+        if (tempTemplate.ModHealth)
+            creatureTemplate.ModHealth = tempTemplate.ModHealth;
+        if (tempTemplate.ModMana)
+            creatureTemplate.ModMana = tempTemplate.ModMana;
+        if (tempTemplate.ModArmor)
+            creatureTemplate.ModArmor = tempTemplate.ModArmor;
+        if (tempTemplate.ModExperience)
+            creatureTemplate.ModExperience = tempTemplate.ModExperience;
+
+        tempTemplate.MechanicImmuneMask = fields[20].Get<uint32>();
+        tempTemplate.SpellSchoolImmuneMask = fields[21].Get<uint8>();
+
+        if (tempTemplate.MechanicImmuneMask)
+            creatureTemplate.MechanicImmuneMask = tempTemplate.MechanicImmuneMask;
+        if (tempTemplate.SpellSchoolImmuneMask)
+            creatureTemplate.SpellSchoolImmuneMask = tempTemplate.SpellSchoolImmuneMask;
+
+
+
+
+        ++count;
+    } while (result->NextRow());
+
+    if (!silent)
+    {
+        LOG_INFO("server.loading", ">> Loaded {} creature template overloads in {} ms", count, GetMSTimeDiffToNow(oldMSTime));
+        LOG_INFO("server.loading", " ");
+    }
+}
+
 void ObjectMgr::LoadCreatureTemplateAddons()
 {
     uint32 oldMSTime = getMSTime();
@@ -3165,6 +3283,165 @@ void ObjectMgr::LoadItemTemplates()
     LOG_INFO("server.loading", " ");
 }
 
+void ObjectMgr::LoadItemTemplateOverloads()
+{
+    uint32 oldMSTime = getMSTime();
+
+    //                                                 0      1      2        3          4          5            6
+    QueryResult result = WorldDatabase.Query("SELECT entry, name, Quality, BuyPrice, SellPrice, ItemLevel, RequiredLevel, "
+    //                        7           8            9           10           11          12           13          14           15          16                         
+                         "StatsCount, stat_type1, stat_value1, stat_type2, stat_value2, stat_type3, stat_value3, stat_type4, stat_value4, stat_type5, "
+    //                         17          18           19          20           21          22           23          24           25          26            27                
+                         "stat_value5, stat_type6, stat_value6, stat_type7, stat_value7, stat_type8, stat_value8, stat_type9, stat_value9, stat_type10, stat_value10, "
+    //                               28                   29            30        31        32         33        34        35       36            37            38     39       
+                         "ScalingStatDistribution, ScalingStatValue, dmg_min1, dmg_max1, dmg_type1, dmg_min2, dmg_max2, dmg_type2, delay, ArmorDamageModifier, armor, block, "
+    //                       40        41         42          43          44         45           46             47              48              49              50           
+                         "holy_res, fire_res, nature_res, frost_res, shadow_res, arcane_res, MaxDurability, socketColor_1, socketContent_1, socketColor_2, socketContent_2, "
+    //                         51              52             53            54                  55                                                                
+                         "socketColor_3, socketContent_3, socketBonus, GemProperties, RequiredDisenchantSkill FROM item_template_overload");
+
+    if (!result)
+    {
+        LOG_WARN("server.loading", ">> Loaded 0 template overloads. DB table `item_template_overload` is empty.");
+        LOG_INFO("server.loading", " ");
+        return;
+    }
+
+    uint32 count = 0;
+
+    do
+    {
+        Field* fields = result->Fetch();
+
+        uint32 entry = fields[0].Get<uint32>();
+
+        ItemTemplate tempTemplate;
+        ItemTemplate& itemTemplate = _itemTemplateStore[entry];
+
+        tempTemplate.Quality = uint32(fields[2].Get<uint8>());
+        tempTemplate.BuyPrice = int32(fields[3].Get<int64>() * sWorld->getRate((Rates)(RATE_BUYVALUE_ITEM_POOR + tempTemplate.Quality)));
+        tempTemplate.SellPrice = uint32(fields[4].Get<uint32>() * sWorld->getRate((Rates)(RATE_SELLVALUE_ITEM_POOR + tempTemplate.Quality)));
+        tempTemplate.ItemLevel = uint32(fields[5].Get<uint16>());
+        tempTemplate.RequiredLevel = uint32(fields[6].Get<uint8>());
+
+        if (tempTemplate.Quality)
+            itemTemplate.Quality = tempTemplate.Quality;
+        if (tempTemplate.BuyPrice)
+            itemTemplate.BuyPrice = tempTemplate.BuyPrice;
+        if (tempTemplate.SellPrice)
+            itemTemplate.SellPrice = tempTemplate.SellPrice;
+        if (tempTemplate.ItemLevel)
+            itemTemplate.ItemLevel = tempTemplate.ItemLevel;
+        if (tempTemplate.RequiredLevel)
+            itemTemplate.RequiredLevel = tempTemplate.RequiredLevel;
+
+        tempTemplate.StatsCount = uint32(fields[7].Get<uint8>());
+
+        if (tempTemplate.StatsCount)
+            itemTemplate.StatsCount = tempTemplate.StatsCount;
+
+        for (uint8 i = 0; i < tempTemplate.StatsCount; ++i)
+        {
+            tempTemplate.ItemStat[i].ItemStatType = uint32(fields[8 + i * 2].Get<uint8>());
+            tempTemplate.ItemStat[i].ItemStatValue = int32(fields[9 + i * 2].Get<int16>());
+
+            if (tempTemplate.ItemStat[i].ItemStatType)
+                itemTemplate.ItemStat[i].ItemStatType = tempTemplate.ItemStat[i].ItemStatType;
+            if (tempTemplate.ItemStat[i].ItemStatValue)
+                itemTemplate.ItemStat[i].ItemStatValue = tempTemplate.ItemStat[i].ItemStatValue;
+        }
+
+        tempTemplate.ScalingStatDistribution = uint32(fields[28].Get<uint16>());
+        tempTemplate.ScalingStatValue = fields[29].Get<int32>();
+
+        if (tempTemplate.ScalingStatDistribution)
+            itemTemplate.ScalingStatDistribution = tempTemplate.ScalingStatDistribution;
+        if (tempTemplate.ScalingStatValue)
+            itemTemplate.ScalingStatValue = tempTemplate.ScalingStatValue;
+
+        for (uint8 i = 0; i < MAX_ITEM_PROTO_DAMAGES; ++i)
+        {
+            tempTemplate.Damage[i].DamageMin = fields[30 + i * 3].Get<float>();
+            tempTemplate.Damage[i].DamageMax = fields[31 + i * 3].Get<float>();
+            tempTemplate.Damage[i].DamageType = uint32(fields[32 + i * 3].Get<uint8>());
+
+            if (tempTemplate.Damage[i].DamageMin)
+                itemTemplate.Damage[i].DamageMin = tempTemplate.Damage[i].DamageMin;
+            if (tempTemplate.Damage[i].DamageMax)
+                itemTemplate.Damage[i].DamageMax = tempTemplate.Damage[i].DamageMax;
+            if (tempTemplate.Damage[i].DamageType)
+                itemTemplate.Damage[i].DamageType = tempTemplate.Damage[i].DamageType;
+        }
+
+        tempTemplate.Delay = uint32(fields[36].Get<uint16>());
+        tempTemplate.ArmorDamageModifier = fields[37].Get<float>();
+
+        if (tempTemplate.Delay)
+            itemTemplate.Delay = tempTemplate.Delay;
+        if (tempTemplate.ArmorDamageModifier)
+            itemTemplate.ArmorDamageModifier = tempTemplate.ArmorDamageModifier;
+
+        tempTemplate.Armor = uint32(fields[38].Get<uint16>());
+        tempTemplate.Block = fields[39].Get<uint32>();
+        tempTemplate.HolyRes = uint32(fields[40].Get<uint8>());
+        tempTemplate.FireRes = uint32(fields[41].Get<uint8>());
+        tempTemplate.NatureRes = uint32(fields[42].Get<uint8>());
+        tempTemplate.FrostRes = uint32(fields[43].Get<uint8>());
+        tempTemplate.ShadowRes = uint32(fields[44].Get<uint8>());
+        tempTemplate.ArcaneRes = uint32(fields[45].Get<uint8>());
+
+        if (tempTemplate.Armor)
+            itemTemplate.Armor = tempTemplate.Armor;
+        if (tempTemplate.Block)
+            itemTemplate.Block = tempTemplate.Block;
+        if (tempTemplate.HolyRes)
+            itemTemplate.HolyRes = tempTemplate.HolyRes;
+        if (tempTemplate.FireRes)
+            itemTemplate.FireRes = tempTemplate.FireRes;
+        if (tempTemplate.NatureRes)
+            itemTemplate.NatureRes = tempTemplate.NatureRes;
+        if (tempTemplate.FrostRes)
+            itemTemplate.FrostRes = tempTemplate.FrostRes;
+        if (tempTemplate.ShadowRes)
+            itemTemplate.ShadowRes = tempTemplate.ShadowRes;
+        if (tempTemplate.ArcaneRes)
+            itemTemplate.ArcaneRes = tempTemplate.ArcaneRes;
+
+        tempTemplate.MaxDurability = uint32(fields[46].Get<uint16>());
+
+        if (tempTemplate.MaxDurability)
+            itemTemplate.MaxDurability = tempTemplate.MaxDurability;
+
+        for (uint8 i = 0; i < MAX_ITEM_PROTO_SOCKETS; ++i)
+        {
+            tempTemplate.Socket[i].Color = uint32(fields[47 + i * 2].Get<uint8>());
+            tempTemplate.Socket[i].Content = fields[48 + i * 2].Get<uint32>();
+
+            if (tempTemplate.Socket[i].Color)
+                itemTemplate.Socket[i].Color = tempTemplate.Socket[i].Color;
+            if (tempTemplate.Socket[i].Content)
+                itemTemplate.Socket[i].Content = tempTemplate.Socket[i].Content;
+        }
+
+        tempTemplate.socketBonus = fields[53].Get<uint32>();
+        tempTemplate.GemProperties = fields[54].Get<uint32>();
+        tempTemplate.RequiredDisenchantSkill = uint32(fields[55].Get<int16>());
+
+        if (tempTemplate.socketBonus)
+            itemTemplate.socketBonus = tempTemplate.socketBonus;
+        if (tempTemplate.GemProperties)
+            itemTemplate.GemProperties = tempTemplate.GemProperties;
+        if (tempTemplate.RequiredDisenchantSkill)
+            itemTemplate.RequiredDisenchantSkill = tempTemplate.RequiredDisenchantSkill;
+
+
+        ++count;
+    } while (result->NextRow());
+
+    LOG_INFO("server.loading", ">> Loaded {} item template overloads in {} ms", count, GetMSTimeDiffToNow(oldMSTime));
+    LOG_INFO("server.loading", " ");
+}
+
 ItemTemplate const* ObjectMgr::GetItemTemplate(uint32 entry)
 {
     return entry < _itemTemplateStoreFast.size() ? _itemTemplateStoreFast[entry] : nullptr;
@@ -5017,6 +5294,72 @@ void ObjectMgr::LoadQuests()
     }
 
     LOG_INFO("server.loading", ">> Loaded {} quests definitions in {} ms", (unsigned long)_questTemplates.size(), GetMSTimeDiffToNow(oldMSTime));
+    LOG_INFO("server.loading", " ");
+}
+
+void ObjectMgr::LoadQuestOverloads()
+{
+    uint32 oldMSTime = getMSTime();
+    //                                               0       1          2             3                 4
+    QueryResult result = WorldDatabase.Query("SELECT ID, QuestLevel, MinLevel, MinPartialLevel, RewardXPDifficulty, "
+    //                                              5                6                   7
+                                             "RewardMoney, RewardMoneyDifficulty, RewardBonusMoney FROM quest_template_overload");
+
+    if (!result)
+    {
+        LOG_WARN("server.loading", ">> Loaded 0 quests overloads. DB table `quest_template_overload` is empty.");
+        LOG_INFO("server.loading", " ");
+        return;
+    }
+
+
+    uint32 count = 0;
+    do
+    {
+        Field* fields = result->Fetch();
+
+        uint32 ID = fields[0].Get<uint32>();
+
+        auto itr = _questTemplates.find(ID);
+        if (itr == _questTemplates.end())
+        {
+            LOG_ERROR("sql.sql", "Table `quest_template_overload` has data for quest {} but such quest does not exist", ID);
+            continue;
+        }
+
+        Quest* overload = itr->second;
+
+        int16 level = fields[1].Get<int16>();
+        uint8 minLevel = fields[2].Get<uint8>();
+        uint8 minPartialLevel = fields[3].Get<uint8>();
+
+        if (level)
+            overload->Level = level;
+        if (minLevel)
+            overload->MinLevel = minLevel;
+        if (minPartialLevel)
+            overload->MinPartialLevel = minPartialLevel;
+
+        uint8 rewardXPDifficulty = fields[4].Get<uint8>();
+        int32 rewardMoney = fields[5].Get<int32>();
+        uint32 rewardMoneyDifficulty = fields[6].Get<uint32>();
+        uint32 rewardBonusMoney = fields[7].Get<uint32>();
+
+        if (rewardXPDifficulty)
+            overload->RewardXPDifficulty = rewardXPDifficulty;
+        if (rewardMoney)
+            overload->RewardMoney = rewardMoney;
+        if (rewardMoneyDifficulty)
+            overload->RewardMoneyDifficulty = rewardMoneyDifficulty;
+        if (rewardBonusMoney)
+            overload->RewardBonusMoney = rewardBonusMoney;
+
+        ++count;
+    } while (result->NextRow());
+
+
+
+    LOG_INFO("server.loading", ">> Loaded {} quests overloads in {} ms", count, GetMSTimeDiffToNow(oldMSTime));
     LOG_INFO("server.loading", " ");
 }
 

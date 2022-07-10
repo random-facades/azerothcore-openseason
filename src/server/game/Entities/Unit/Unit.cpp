@@ -19735,8 +19735,6 @@ void Unit::RewardRage(uint32 damage, CleanDamage const* cleanDamage, bool attack
 
         addRage = damageDealt / rageConversionFactor;
 
-        LOG_ERROR("entities.unit", "RAGE GEN: {} - {} - {} - {} - {} == {}", damageDealt, getLevel(), rageConversionFactor, stats->BaseDamage[0], stats->AttackPower, addRage);
-
         // Berserker Rage effect
         if (HasAura(18499))
             addRage *= 3.0f;

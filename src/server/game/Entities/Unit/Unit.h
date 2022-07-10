@@ -734,14 +734,18 @@ private:
 
 struct CleanDamage
 {
+    CleanDamage(uint32 mitigated, uint32 absorbed, WeaponAttackType _attackType, MeleeHitOutcome _hitOutCome, float _attackRoll) :
+        absorbed_damage(absorbed), mitigated_damage(mitigated), attackType(_attackType), hitOutCome(_hitOutCome), damageRoll(_attackRoll) {}
     CleanDamage(uint32 mitigated, uint32 absorbed, WeaponAttackType _attackType, MeleeHitOutcome _hitOutCome) :
-        absorbed_damage(absorbed), mitigated_damage(mitigated), attackType(_attackType), hitOutCome(_hitOutCome) {}
+        absorbed_damage(absorbed), mitigated_damage(mitigated), attackType(_attackType), hitOutCome(_hitOutCome), damageRoll(0.0f) {}
 
     uint32 absorbed_damage;
     uint32 mitigated_damage;
 
     WeaponAttackType attackType;
     MeleeHitOutcome hitOutCome;
+
+    float damageRoll;
 };
 
 struct CalcDamageInfo;
@@ -877,6 +881,7 @@ struct CalcDamageInfo
     uint32 procEx;
     uint32 cleanDamage;          // Used only for rage calculation
     MeleeHitOutcome hitOutCome;  // TODO: remove this field (need use TargetState)
+    float damageRoll;
 };
 
 // Spell damage info structure based on structure sending in SMSG_SPELLNONMELEEDAMAGELOG opcode
@@ -2093,7 +2098,7 @@ public:
     void SetBaseWeaponDamage(WeaponAttackType attType, WeaponDamageRange damageRange, float value) { m_weaponDamage[attType][damageRange] = value; }
     virtual void CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bool addTotalPct, float& minDamage, float& maxDamage) = 0;
     uint32 CalculateDamage(WeaponAttackType attType, bool normalized, bool addTotalPct);
-    float CalculateDamageF(WeaponAttackType attType, bool normalized, bool addTotalPct);
+    float CalculateDamageF(WeaponAttackType attType, bool normalized, bool addTotalPct, float& roll);
     float GetAPMultiplier(WeaponAttackType attType, bool normalized);
 
     bool isInFrontInMap(Unit const* target, float distance, float arc = M_PI) const;
@@ -2362,7 +2367,7 @@ public:
     [[nodiscard]] float GetHoverHeight() const { return IsHovering() ? GetFloatValue(UNIT_FIELD_HOVERHEIGHT) : 0.0f; }
     [[nodiscard]] virtual bool CanEnterWater() const = 0;
 
-    void RewardRage(uint32 damage, uint32 weaponSpeedHitFactor, bool attacker);
+    void RewardRage(uint32 damageDealt, CleanDamage const* cleanDamage, bool attacker, uint32 attackerLevel);
 
     [[nodiscard]] virtual float GetFollowAngle() const { return static_cast<float>(M_PI / 2); }
 

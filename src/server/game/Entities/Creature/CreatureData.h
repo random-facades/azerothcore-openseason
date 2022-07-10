@@ -366,6 +366,8 @@ struct CreatureData
     uint32 id2{0};                                             // entry in creature_template
     uint32 id3{0};                                             // entry in creature_template
     uint16 mapid{0};
+    uint16 areaid{0};
+    uint16 zoneid{0};
     uint32 phaseMask{0};
     uint32 displayid{0};
     int8 equipmentId{0};

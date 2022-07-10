@@ -2309,15 +2309,25 @@ void ObjectMgr::LoadCreatures()
             data.phaseMask = 1;
         }
 
+        data.zoneid = sMapMgr->GetZoneId(data.phaseMask, data.mapid, data.posX, data.posY, data.posZ);
+        data.areaid = sMapMgr->GetAreaId(data.phaseMask, data.mapid, data.posX, data.posY, data.posZ);
+
+        uint32 index = data.areaid << 16 | data.zoneid;
+        if (_creaturesPerZone.count(index) == 0)
+        {
+            _creaturesPerZone[index] = 0;
+            _deadCreaturesPerZone[index] = 0;
+        }
+
+        _creaturesPerZone[index]++;
+
         if (sWorld->getBoolConfig(CONFIG_CALCULATE_CREATURE_ZONE_AREA_DATA))
         {
-            uint32 zoneId = sMapMgr->GetZoneId(data.phaseMask, data.mapid, data.posX, data.posY, data.posZ);
-            uint32 areaId = sMapMgr->GetAreaId(data.phaseMask, data.mapid, data.posX, data.posY, data.posZ);
 
             WorldDatabasePreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_UPD_CREATURE_ZONE_AREA_DATA);
 
-            stmt->SetData(0, zoneId);
-            stmt->SetData(1, areaId);
+            stmt->SetData(0, data.zoneid);
+            stmt->SetData(1, data.areaid);
             stmt->SetData(2, spawnId);
 
             WorldDatabase.Execute(stmt);
@@ -7233,6 +7243,42 @@ uint32 ObjectMgr::GenerateGameObjectSpawnId()
         World::StopNow(ERROR_EXIT_CODE);
     }
     return _gameObjectSpawnId++;
+}
+
+float ObjectMgr::GetDynamicRespawnRate(Creature* creature)
+{
+    if (_creaturesPerZone[index] < 10)
+        return 0;
+
+    const CreatureData* data = creature->GetCreatureData();
+    if(!data)
+        return 0;
+
+    uint32 index = data->areaid << 16 | data->zoneid;
+    float levelRate = sqrt(creature->getLevel())/2;
+    return _deadCreaturesPerZone[index] / (levelRate * _creaturesPerZone[index]);
+}
+
+void ObjectMgr::CreatureDiedTrigger(Creature* creature)
+{
+    const CreatureData* data = creature->GetCreatureData();
+    if (data)
+    {
+        uint32 index = data->areaid << 16 | data->zoneid;
+        if (_deadCreaturesPerZone[index] < _creaturesPerZone[index])
+            _deadCreaturesPerZone[index]++;
+    }
+}
+
+void ObjectMgr::CreatureRespawnedTrigger(Creature* creature)
+{
+    const CreatureData* data = creature->GetCreatureData();
+    if (data)
+    {
+        uint32 index = data->areaid << 16 | data->zoneid;
+        if (_deadCreaturesPerZone[index] > 0)
+            _deadCreaturesPerZone[index]--;
+    }
 }
 
 void ObjectMgr::LoadGameObjectLocales()

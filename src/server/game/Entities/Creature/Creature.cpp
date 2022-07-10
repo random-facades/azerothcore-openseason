@@ -628,9 +628,12 @@ void Creature::Update(uint32 diff)
         case DEAD:
             {
                 time_t now = GameTime::GetGameTime().count();
+                if (m_creatureData)
+                    now += uint32(m_respawnDelay * sObjectMgr->GetDynamicRespawnRate(this));
+
+
                 if (m_respawnTime <= now)
                 {
-
                     ConditionList conditions = sConditionMgr->GetConditionsForNotGroupedEntry(CONDITION_SOURCE_TYPE_CREATURE_RESPAWN, GetEntry());
 
                     if (!sConditionMgr->IsObjectMeetToConditions(this, conditions))
@@ -667,6 +670,8 @@ void Creature::Update(uint32 diff)
                 if (m_deathState != CORPSE)
                     break;
 
+                time_t now = GameTime::GetGameTime().count();
+
                 if (m_groupLootTimer && lootingGroupLowGUID)
                 {
                     if (m_groupLootTimer <= diff)
@@ -682,7 +687,7 @@ void Creature::Update(uint32 diff)
                         m_groupLootTimer -= diff;
                     }
                 }
-                else if (m_corpseRemoveTime <= GameTime::GetGameTime().count())
+                else if (m_corpseRemoveTime <= now)
                 {
                     RemoveCorpse(false);
                     LOG_DEBUG("entities.unit", "Removing corpse... {} ", GetUInt32Value(OBJECT_FIELD_ENTRY));
@@ -1895,6 +1900,7 @@ void Creature::setDeathState(DeathState s, bool despawn)
 
     if (s == JUST_DIED)
     {
+        sObjectMgr->CreatureDiedTrigger(this);
         _lastDamagedTime.reset();
 
         m_corpseRemoveTime = GameTime::GetGameTime().count() + m_corpseDelay;
@@ -1931,6 +1937,7 @@ void Creature::setDeathState(DeathState s, bool despawn)
     }
     else if (s == JUST_RESPAWNED)
     {
+        sObjectMgr->CreatureRespawnedTrigger(this);
         //if (IsPet())
         //    setActive(true);
         SetFullHealth();

@@ -1117,6 +1117,9 @@ public:
     uint32 GeneratePetNumber();
     ObjectGuid::LowType GenerateCreatureSpawnId();
     ObjectGuid::LowType GenerateGameObjectSpawnId();
+    float GetDynamicRespawnRate(Creature* creature);
+    void CreatureDiedTrigger(Creature* creature);
+    void CreatureRespawnedTrigger(Creature* creature);
 
     typedef std::multimap<int32, uint32> ExclusiveQuestGroups;
     typedef std::pair<ExclusiveQuestGroups::const_iterator, ExclusiveQuestGroups::const_iterator> ExclusiveQuestGroupsBounds;
@@ -1534,6 +1537,8 @@ private:
     CellObjectGuidsMap _emptyCellObjectGuidsMap;
     CellObjectGuids _emptyCellObjectGuids;
     CreatureDataContainer _creatureDataStore;
+    std::unordered_map <uint32, uint32> _creaturesPerZone;
+    std::unordered_map <uint32, uint32> _deadCreaturesPerZone;
     CreatureTemplateContainer _creatureTemplateStore;
     std::vector<CreatureTemplate*> _creatureTemplateStoreFast; // pussywizard
     CreatureModelContainer _creatureModelStore;

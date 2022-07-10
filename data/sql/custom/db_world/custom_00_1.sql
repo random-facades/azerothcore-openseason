@@ -43,7 +43,7 @@ UPDATE `npc_trainer` SET `ReqLevel` = 20 WHERE `SpellID` IN (27958, 28028, 32667
 -- Remove Level requirements for teleports
 UPDATE `npc_trainer` SET `ReqLevel` = 0  WHERE `SpellID` IN (3561, 3562, 3563, 3565, 3566, 3567, 32271, 32272, 33690, 35715, 49358, 49359, 53140);
 -- Change teleport spell cost
-UPDATE `npc_trainer` SET `MoneyCost` = 2000 WHERE `ID` in (4165,5957) and `SpellID` IN (3565,3566);
+UPDATE `npc_trainer` SET `MoneyCost` = 1000 WHERE `SpellID` IN (3561, 3562, 3563, 3565, 3566, 3567, 32271, 32272);
 UPDATE `npc_trainer` SET `MoneyCost` = 8000 WHERE `ID` in (27703,27705) and `SpellID` IN (49358,49359);
 
 -- Reduce Level requirements for class training

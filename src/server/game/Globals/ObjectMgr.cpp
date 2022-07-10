@@ -7247,14 +7247,14 @@ uint32 ObjectMgr::GenerateGameObjectSpawnId()
 
 float ObjectMgr::GetDynamicRespawnRate(Creature* creature)
 {
-    if (_creaturesPerZone[index] < 10)
-        return 0;
-
     const CreatureData* data = creature->GetCreatureData();
     if(!data)
         return 0;
 
     uint32 index = data->areaid << 16 | data->zoneid;
+    if (_creaturesPerZone[index] < 10)
+        return 0;
+
     float levelRate = sqrt(creature->getLevel())/2;
     return _deadCreaturesPerZone[index] / (levelRate * _creaturesPerZone[index]);
 }

@@ -286,7 +286,7 @@ public:
             if (_chargeTarget.first == hatedUnit->GetGUID())
             {
                 // Do not count DOTs/HOTs
-                if (!threatSpell || !threatSpell->HasAttribute(SPELL_ATTR0_CU_NO_INITIAL_THREAT))
+                if (!(threatSpell && (threatSpell->HasAura(SPELL_AURA_DAMAGE_SHIELD) || threatSpell->HasAttribute(SPELL_ATTR0_CU_NO_INITIAL_THREAT))))
                 {
                     _chargeTarget.second += threat;
                 }
@@ -311,6 +311,12 @@ public:
                     events.CancelEvent(EVENT_EXECUTE);
                 }
             }
+        }
+
+        bool OnTeleportUnreacheablePlayer(Player* player) override
+        {
+            DoCast(player, SPELL_SUMMON_PLAYER, true);
+            return true;
         }
 
         void DoMeleeAttackIfReady(bool ignoreCasting)
@@ -713,11 +719,14 @@ public:
             {
                 if (Unit* target = GetTarget())
                 {
-                    if (Creature* caster = GetCaster()->ToCreature())
+                    if (Unit* caster = GetCaster())
                     {
-                        if (caster->IsAIEnabled)
+                        if (Creature* cCaster = caster->ToCreature())
                         {
-                            caster->AI()->SetGUID(target->GetGUID(), ACTION_CHARGE);
+                            if (cCaster->IsAIEnabled)
+                            {
+                                cCaster->AI()->SetGUID(target->GetGUID(), ACTION_CHARGE);
+                            }
                         }
                     }
                 }

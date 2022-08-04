@@ -3498,8 +3498,11 @@ uint32 Unit::GetWeaponSkillValue (WeaponAttackType attType, Unit const* target) 
         value = (target && target->IsControlledByPlayer())
                 ? player->GetMaxSkillValue(skill)
                 : player->GetSkillValue(skill);
+
         // Modify value from ratings
-        value += uint32(player->GetRatingBonusValue(CR_WEAPON_SKILL));
+        if (skill != SKILL_UNARMED)
+            value += uint32(player->GetRatingBonusValue(CR_WEAPON_SKILL));
+
         switch (attType)
         {
             case BASE_ATTACK:

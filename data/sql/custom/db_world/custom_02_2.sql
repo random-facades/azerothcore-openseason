@@ -29,7 +29,5 @@ WHERE ID = 919;
 UPDATE `creature` SET `wander_distance` = 0, `MovementType` = 0 WHERE `guid` = 47347 AND `id1` = 1992;
 
 
-UPDATE `npc_trainer` SET `ID` = 200013 WHERE `ID` = 200014 and `SpellID` in (3127,5116,13165,14260);
-
-
+-- Make Teldrassil spiders hostile
 UPDATE `creature_template` SET faction = 22 WHERE `entry` IN (1986, 1994);

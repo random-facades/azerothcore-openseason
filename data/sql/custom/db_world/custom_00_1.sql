@@ -46,6 +46,8 @@ UPDATE `npc_trainer` SET `ReqLevel` = 0  WHERE `SpellID` IN (3561, 3562, 3563, 3
 UPDATE `npc_trainer` SET `MoneyCost` = 1000 WHERE `SpellID` IN (3561, 3562, 3563, 3565, 3566, 3567, 32271, 32272);
 UPDATE `npc_trainer` SET `MoneyCost` = 8000 WHERE `ID` in (27703,27705) and `SpellID` IN (49358,49359);
 
+-- Removing Balance Changes until more testing is done
+/*
 -- Reduce Level requirements for class training
 UPDATE `npc_trainer` SET `ReqLevel` = 1  WHERE `SpellID` IN (348);
 UPDATE `npc_trainer` SET `ReqLevel` = 2  WHERE `SpellID` IN (13163);
@@ -67,6 +69,7 @@ UPDATE `npc_trainer` SET `MoneyCost` = 100 WHERE `ID` = 200013 and `SpellID` = 1
 -- Change spell being cast by tutorial mobs (they're a bit too overpowered)
 UPDATE `smart_scripts` SET `event_param3` = 10000, `event_param4` = 10000, `action_param1` = 2607 WHERE `entryorguid` = 1993 AND `source_type` = 0 AND `id` = 1 AND `link` = 0;
 UPDATE `smart_scripts` SET `action_param1` = 5176 WHERE `entryorguid` = 7235 AND `source_type` = 0 AND `id` = 0 AND `link` = 0;
+*/
 
 -- Change healer to cast healing to whoever needs it
 UPDATE `smart_scripts` SET `event_type` = 14, `event_chance` = 100, `event_param1` = 50, `event_param3` = 5000, `event_param4` = 5000, `target_type` = 7, `comment` = 'Gnarlpine Shaman - On Friendly Between 0-40% Health - Cast \'Healing Wave\'' WHERE `entryorguid` = 2009 AND `source_type` = 0 AND `id` = 0 AND `link` = 0;
